@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+       
+    </head>
+
+    <!-- Body tag is where we will append our SVG and SVG objects-->
+    <body>  
+            <script src="utility.js"></script>    
+            <script type="text/javascript">
+                myUtil = new util();
+                console.log(myUtil.getUnixTime(2019, 10, 11, 11, 44, 20));
+                console.log(myUtil.getUnixTimeFromDate(new Date()));
+                console.log(myUtil.getDateFromUnixTime(1480764600));
+            </script>
+    </body>
