@@ -10,8 +10,69 @@
             <script src="utility.js"></script>    
             <script type="text/javascript">
                 myUtil = new util();
+
+                //Testing GET /states/all
                 console.log(myUtil.getUnixTime(2019, 10, 11, 11, 44, 20));
                 console.log(myUtil.getUnixTimeFromDate(new Date()));
                 console.log(myUtil.getDateFromUnixTime(1480764600));
+                myUtil.getCurrentState(currentStateCallback)
+
+                var stateData = null;
+                function currentStateCallback(data)
+                {
+                   console.log("currentStateCallback: ",  data);
+                   stateData = data;
+                } 
+                
+                //Testing GET /flights/all
+                var endDate = new Date();
+                endDate.setDate(endDate.getDate() - 1);
+                var beginDate = new Date(endDate);
+                beginDate.setHours((beginDate.getHours() - 1));
+                console.log(myUtil.getUnixTimeFromDate(beginDate), myUtil.getUnixTimeFromDate(endDate))
+                console.log(beginDate.getHours(), endDate.getHours())
+                myUtil.getFlightsByTime(beginDate, endDate, flightsByTimeCallback);
+                
+                function flightsByTimeCallback(data)
+                {
+                    console.log("flightsByTimeCallback: ", data);
+                }
+
+                //Testing GET /flights/arrival
+                myUtil.getFlightsByArrivalAirport("KDCA", beginDate, endDate, flightsByArrivalCallback);
+
+                function flightsByArrivalCallback(data)
+                {
+                    console.log("flightsByArrival: ", data);
+                }
+                
+                //Testing GET /flights/departure
+                myUtil.getFlightsByDepartureAirport("KDCA", beginDate, endDate, flightsByDepartureCallback);
+                var departureData = null;
+                function flightsByDepartureCallback(data)
+                {
+                    console.log("flightsByDeparture: ", data);
+                    departureData = data;
+                }
+
+                //Testing GET GET /tracks
+                function CheckTracks()
+                {
+                    if(stateData == null)
+                    {
+                        setTimeout(CheckTracks,50);
+                        return;
+                    }
+                    //setTimeout(function(){},50);
+                    states = stateData.states;
+                    // myUtil.getTrackByAircraft(states[100][0].toLowerCase(), 0, flightTracksCallback)
+                    // function flightTracksCallback(data)
+                    // {
+                    //     console.log("CheckTracks: ", data);
+                    // }
+                }
+                
+                CheckTracks();
+
             </script>
     </body>
