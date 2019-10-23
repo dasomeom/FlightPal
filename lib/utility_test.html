@@ -2,77 +2,108 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-       
+        <style>
+            #map {
+                height: 100%;
+            }
+            html, body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+        </style>
+        <meta name="viewport" content="initial-scale=1.0">
+
     </head>
 
     <!-- Body tag is where we will append our SVG and SVG objects-->
     <body>  
-            <script src="utility.js"></script>    
-            <script type="text/javascript">
-                myUtil = new util();
+        <script src="utility.js"></script> 
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEvogwuKKRrOFphoADJLjYW4iPBCiTkk8&callback=initMap"
+        async defer></script>
+        <div id="map"></div>
+        
+        <script type="text/javascript">
+            var map;
+            function initMap() 
+            {
+                map = new google.maps.Map(document.getElementById('map'), {
+                center: {lat: 40, lng: -100},
+                zoom: 6
+                });
 
-                //Testing GET /states/all
-                console.log(myUtil.getUnixTime(2019, 10, 11, 11, 44, 20));
-                console.log(myUtil.getUnixTimeFromDate(new Date()));
-                console.log(myUtil.getDateFromUnixTime(1480764600));
-                myUtil.getCurrentState(currentStateCallback)
+                var latLng = new google.maps.LatLng(40,-100);
+                var marker = new google.maps.Marker({
+                    position: latLng,
+                    map: map
+                });
 
-                var stateData = null;
-                function currentStateCallback(data)
+            }
+
+            myUtil = new util();
+
+            //Testing GET /states/all
+            console.log(myUtil.getUnixTime(2019, 10, 11, 11, 44, 20));
+            console.log(myUtil.getUnixTimeFromDate(new Date()));
+            console.log(myUtil.getDateFromUnixTime(1480764600));
+            myUtil.getCurrentState(currentStateCallback)
+
+            var stateData = null;
+            function currentStateCallback(data)
+            {
+                console.log("currentStateCallback: ",  data);
+                stateData = data;
+            } 
+            
+            //Testing GET /flights/all
+            var endDate = new Date();
+            endDate.setDate(endDate.getDate() - 1);
+            var beginDate = new Date(endDate);
+            beginDate.setHours((beginDate.getHours() - 1));
+            console.log(myUtil.getUnixTimeFromDate(beginDate), myUtil.getUnixTimeFromDate(endDate))
+            console.log(beginDate.getHours(), endDate.getHours())
+            myUtil.getFlightsByTime(beginDate, endDate, flightsByTimeCallback);
+            
+            function flightsByTimeCallback(data)
+            {
+                console.log("flightsByTimeCallback: ", data);
+            }
+
+            //Testing GET /flights/arrival
+            myUtil.getFlightsByArrivalAirport("KDCA", beginDate, endDate, flightsByArrivalCallback);
+
+            function flightsByArrivalCallback(data)
+            {
+                console.log("flightsByArrival: ", data);
+            }
+            
+            //Testing GET /flights/departure
+            myUtil.getFlightsByDepartureAirport("KDCA", beginDate, endDate, flightsByDepartureCallback);
+            var departureData = null;
+            function flightsByDepartureCallback(data)
+            {
+                console.log("flightsByDeparture: ", data);
+                departureData = data;
+            }
+
+            //Testing GET GET /tracks
+            function CheckTracks()
+            {
+                if(stateData == null)
                 {
-                   console.log("currentStateCallback: ",  data);
-                   stateData = data;
-                } 
-                
-                //Testing GET /flights/all
-                var endDate = new Date();
-                endDate.setDate(endDate.getDate() - 1);
-                var beginDate = new Date(endDate);
-                beginDate.setHours((beginDate.getHours() - 1));
-                console.log(myUtil.getUnixTimeFromDate(beginDate), myUtil.getUnixTimeFromDate(endDate))
-                console.log(beginDate.getHours(), endDate.getHours())
-                myUtil.getFlightsByTime(beginDate, endDate, flightsByTimeCallback);
-                
-                function flightsByTimeCallback(data)
-                {
-                    console.log("flightsByTimeCallback: ", data);
+                    setTimeout(CheckTracks,50);
+                    return;
                 }
+                //setTimeout(function(){},50);
+                states = stateData.states;
+                // myUtil.getTrackByAircraft(states[100][0].toLowerCase(), 0, flightTracksCallback)
+                // function flightTracksCallback(data)
+                // {
+                //     console.log("CheckTracks: ", data);
+                // }
+            }
+            
+            CheckTracks();
 
-                //Testing GET /flights/arrival
-                myUtil.getFlightsByArrivalAirport("KDCA", beginDate, endDate, flightsByArrivalCallback);
-
-                function flightsByArrivalCallback(data)
-                {
-                    console.log("flightsByArrival: ", data);
-                }
-                
-                //Testing GET /flights/departure
-                myUtil.getFlightsByDepartureAirport("KDCA", beginDate, endDate, flightsByDepartureCallback);
-                var departureData = null;
-                function flightsByDepartureCallback(data)
-                {
-                    console.log("flightsByDeparture: ", data);
-                    departureData = data;
-                }
-
-                //Testing GET GET /tracks
-                function CheckTracks()
-                {
-                    if(stateData == null)
-                    {
-                        setTimeout(CheckTracks,50);
-                        return;
-                    }
-                    //setTimeout(function(){},50);
-                    states = stateData.states;
-                    // myUtil.getTrackByAircraft(states[100][0].toLowerCase(), 0, flightTracksCallback)
-                    // function flightTracksCallback(data)
-                    // {
-                    //     console.log("CheckTracks: ", data);
-                    // }
-                }
-                
-                CheckTracks();
-
-            </script>
+        </script>
     </body>
