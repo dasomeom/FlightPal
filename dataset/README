@@ -1,0 +1,23 @@
+This folder contains server related stuff. The server is used as a bridge between sql
+and the client to allow for parametric database search. 
+Follow the the steps below to install the tools needed.
+
+1. Download and install Node.js from here: https://nodejs.org/en/download/
+   Or use the msi included in this folder. During installation, select the radio button
+   titled "Automatically install the necessary tools."
+2. Install sqlite3 for node.js. Open a command window with admin privilages and type:
+   npm install sqlite3. This installs sqlite3 library for node.js.
+3. Install express.js for node.js. Open a command window with admin privilages and type:
+   npm install express
+4. Download flightpal.db from 
+5. Run the server by typing: node .\flightpal_rest.js from the command line. This starts
+   the REST API server which can then be queried using a client. The file flightpal.db
+   should be in the same folder when running the server.
+
+To generate the flightpal.db, ensure opensky.csv, airlines.csv and airports.csv are in 
+this folder and type ./sqlite3.exe flightpal.db < createDB.SQL (using cygwin or linux).
+
+To install cygwin, go to https://www.cygwin.com/
+
+opensky.csv can be downloaded from: 
+https://gtvault-my.sharepoint.com/:x:/r/personal/smelaku6_gatech_edu/Documents/opensky.csv?d=w3e7ba17d91bc4fb0bf0affd8517f5ab1&csf=1&e=mPwUWW
