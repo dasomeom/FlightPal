@@ -9,8 +9,10 @@ Follow the the steps below to install the tools needed.
    npm install sqlite3. This installs sqlite3 library for node.js.
 3. Install express.js for node.js. Open a command window with admin privilages and type:
    npm install express
-4. Download flightpal.db from https://gtvault-my.sharepoint.com/:u:/r/personal/smelaku6_gatech_edu/Documents/flightpal.db?csf=1&e=ugaYhO 
-5. Run the server by typing: node .\flightpal_rest.js from the command line. This starts
+4. Install body-parser for node.js:
+   npm install body-parser
+5. Download flightpal.db from https://gtvault-my.sharepoint.com/:u:/r/personal/smelaku6_gatech_edu/Documents/flightpal.db?csf=1&e=ugaYhO 
+6. Run the server by typing: node .\flightpal_rest.js from the command line. This starts
    the REST API server which can then be queried using a client. The file flightpal.db
    should be in the same folder when running the server.
 
