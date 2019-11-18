@@ -69,4 +69,5 @@ restapi.post('/sqlquery', function(req, res){
     }
 });
 
+console.log("Listning on port 8000\n")
 restapi.listen(8000);
