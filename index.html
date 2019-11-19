@@ -121,6 +121,21 @@
             background-color: DodgerBlue;
             color: #fff;
             }
+
+            .loader {
+            border: 16px solid #f3f3f3; /* Light grey */
+            border-top: 16px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            }
+
+            @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+            }
+
         </style>
         <meta name="viewport" content="initial-scale=1.0">
 
@@ -144,13 +159,20 @@
                     <p>
                         <div class="autocomplete">
                             <input type="text" id="depCityName" placeholder="Departure City">
+                            <span id="depCityError"></span>
                         </div>
                         <div class="autocomplete">
                             <input type="text" id="arrCityName" placeholder="Arrival City">
+                            <span id="arrCityError"></span>
                         </div>
-                        <input type="text" placeholder="Depart" onfocus="(this.type='date')"> 
-                        <input type="text" placeholder="Return" onfocus="(this.type='date')">
-                        <button onclick="searchCities(event)">Search</button>
+                        <input type="text" id="departDate" placeholder="Depart" onfocus="(this.type='date')"> 
+                        <span id="departDateError"></span>
+                        <input type="text" id="returnDate" placeholder="Return" onfocus="(this.type='date')">
+                        <span id="returnDateError"></span>
+                        <div>
+                            <button onclick="searchCities(event)">Search</button>
+                        </div>
+                        <div class="loader"></div>
                         <script>
                             
                         </script>
@@ -190,13 +212,15 @@
 
                 // Get all elements with class="tabcontent" and hide them
                 tabcontent = document.getElementsByClassName("tabcontent");
-                for (i = 0; i < tabcontent.length; i++) {
+                for (i = 0; i < tabcontent.length; i++) 
+                {
                     tabcontent[i].style.display = "none";
                 }
 
                 // Get all elements with class="tablinks" and remove the class "active"
                 tablinks = document.getElementsByClassName("tablinks");
-                for (i = 0; i < tablinks.length; i++) {
+                for (i = 0; i < tablinks.length; i++) 
+                {
                     tablinks[i].className = tablinks[i].className.replace(" active", "");
                 }
 
@@ -207,7 +231,8 @@
 
             // Get the element with id="defaultOpen" and click on it
             document.getElementById("defaultOpen").click();
-            
+            loader = document.getElementsByClassName("loader");
+            loader[0].style.display = "none";
 
 
             myUtil = new util();
@@ -215,6 +240,7 @@
             myUtil.sendSQLQuery("SELECT * FROM cities", citiesCallback)
             cities = []
             cityNames = []
+            stateNames = []
 
             function citiesCallback(data)
             {
@@ -224,125 +250,129 @@
                 for (i = 0; i < cities.length; i++)
                 {
                     cityNames.push(cities[i]["city"]);
+                    stateNames.push(cities[i]["admin_name"])
                 }
                 console.log(cityNames);
             }
             
-            autocomplete(document.getElementById("depCityName"), cityNames);
-            autocomplete(document.getElementById("arrCityName"), cityNames);
+            myUtil.autocomplete(document.getElementById("depCityName"), cityNames, stateNames);
+            myUtil.autocomplete(document.getElementById("arrCityName"), cityNames, stateNames);
 
-            function autocomplete(inp, arr) 
-            {
-                /*the autocomplete function takes two arguments,
-                the text field element and an array of possible autocompleted values:*/
-                var currentFocus;
-                /*execute a function when someone writes in the text field:*/
-                inp.addEventListener("input", function(e) {
-                    var a, b, i, val = this.value;
-                    /*close any already open lists of autocompleted values*/
-                    closeAllLists();
-                    if (!val) { return false;}
-                    currentFocus = -1;
-                    /*create a DIV element that will contain the items (values):*/
-                    a = document.createElement("DIV");
-                    a.setAttribute("id", this.id + "autocomplete-list");
-                    a.setAttribute("class", "autocomplete-items");
-                    /*append the DIV element as a child of the autocomplete container:*/
-                    this.parentNode.appendChild(a);
-                    /*for each item in the array...*/
-                    for (i = 0; i < arr.length; i++) {
-                        /*check if the item starts with the same letters as the text field value:*/
-                        if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
-                        /*create a DIV element for each matching element:*/
-                        b = document.createElement("DIV");
-                        /*make the matching letters bold:*/
-                        b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
-                        b.innerHTML += arr[i].substr(val.length);
-                        /*insert a input field that will hold the current array item's value:*/
-                        b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
-                        /*execute a function when someone clicks on the item value (DIV element):*/
-                            b.addEventListener("click", function(e) {
-                            /*insert the value for the autocomplete text field:*/
-                            inp.value = this.getElementsByTagName("input")[0].value;
-                            /*close the list of autocompleted values,
-                            (or any other open lists of autocompleted values:*/
-                            closeAllLists();
-                        });
-                        a.appendChild(b);
-                        }
-                    }
-                });
-                /*execute a function presses a key on the keyboard:*/
-                inp.addEventListener("keydown", function(e) {
-                    var x = document.getElementById(this.id + "autocomplete-list");
-                    if (x) x = x.getElementsByTagName("div");
-                    if (e.keyCode == 40) {
-                        /*If the arrow DOWN key is pressed,
-                        increase the currentFocus variable:*/
-                        currentFocus++;
-                        /*and and make the current item more visible:*/
-                        addActive(x);
-                    } else if (e.keyCode == 38) { //up
-                        /*If the arrow UP key is pressed,
-                        decrease the currentFocus variable:*/
-                        currentFocus--;
-                        /*and and make the current item more visible:*/
-                        addActive(x);
-                    } else if (e.keyCode == 13) {
-                        /*If the ENTER key is pressed, prevent the form from being submitted,*/
-                        e.preventDefault();
-                        if (currentFocus > -1) {
-                        /*and simulate a click on the "active" item:*/
-                        if (x) x[currentFocus].click();
-                        }
-                    }
-                });
-                function addActive(x) {
-                    /*a function to classify an item as "active":*/
-                    if (!x) return false;
-                    /*start by removing the "active" class on all items:*/
-                    removeActive(x);
-                    if (currentFocus >= x.length) currentFocus = 0;
-                    if (currentFocus < 0) currentFocus = (x.length - 1);
-                    /*add class "autocomplete-active":*/
-                    x[currentFocus].classList.add("autocomplete-active");
-                }
-                function removeActive(x) {
-                    /*a function to remove the "active" class from all autocomplete items:*/
-                    for (var i = 0; i < x.length; i++) {
-                    x[i].classList.remove("autocomplete-active");
-                    }
-                }
-                function closeAllLists(elmnt) {
-                    /*close all autocomplete lists in the document,
-                    except the one passed as an argument:*/
-                    var x = document.getElementsByClassName("autocomplete-items");
-                    for (var i = 0; i < x.length; i++) {
-                    if (elmnt != x[i] && elmnt != inp) {
-                    x[i].parentNode.removeChild(x[i]);
-                    }
-                }
-                }
-                /*execute a function when someone clicks in the document:*/
-                document.addEventListener("click", function (e) {
-                    closeAllLists(e.target);
-                });
-            }
 
-            function departureCityFunction()
-            {
-                input = document.getElementById('depCityName')
-                //console.log("entered city name: ", input.value)
-            }
-            
-            function arrivalCityFunction()
-            {
-                input = document.getElementById('arrCityName')
-                //console.log("entered city name: ", input.value)
-            }
 
+            var departCity;
+            var arrivalCity;
+            var departDate;
+            var returnDate;
             function searchCities(event)
             {
+                event.preventDefault();
+                //Form verification
+                //Departure city verification
+                dp = document.getElementById("depCityName").value.split(", ");
+                departCity = cities.find(function(e){
+                    return e["city"] === dp[0] && e["admin_name"] === dp[1]; 
+                });
+                departCityValid = departCity != undefined
+                console.log(dp, departCity, departCityValid)
+
+                if (!departCityValid)
+                {
+                    document.getElementById("depCityError").innerHTML = "Invalid departure city";
+                    document.getElementById("depCityError").style.color = "red";
+                }
+                else
+                {
+                    document.getElementById("depCityError").innerHTML = ""
+                }
+
+                //Arrival city verification
+                dp = document.getElementById("arrCityName").value.split(", ");
+                arrivalCity = cities.find(function(e){
+                    return e["city"] === dp[0] && e["admin_name"] === dp[1]; 
+                });
+                arrivalCityValid = arrivalCity != undefined
+                console.log(dp, arrivalCity, arrivalCityValid)
+
+                if (!arrivalCityValid)
+                {
+                    document.getElementById("arrCityError").innerHTML = "Invalid arrival city";
+                    document.getElementById("arrCityError").style.color = "red";
+                }
+                else
+                {
+                    document.getElementById("arrCityError").innerHTML = ""
+                }
+
+
+                //Arrival city verification
+
+                //Depart date verification
+                dp = document.getElementById("departDate").value.split("-");
+                departDate =  new Date(dp[0], dp[1], dp[2])
+                d = departDate.getDate();
+                m = departDate.getMonth();
+                y = departDate.getFullYear();
+                now = new Date();
+                departDateValid =   (d > 0 && d < 32 && m > 0 && m < 13 && y >= now.getFullYear() - 10 && y <= now.getFullYear() + 10);
+                
+                if (!departDateValid)
+                {
+                    document.getElementById("departDateError").innerHTML = "Invalid depart date";
+                    document.getElementById("departDateError").style.color = "red";
+                }
+                else
+                {
+                    document.getElementById("departDateError").innerHTML = "";
+                }
+
+                //Return date verification
+                dp = document.getElementById("returnDate").value.split("-");
+                returnDate =  new Date(dp[0], dp[1], dp[2])
+                d = returnDate.getDate();
+                m = returnDate.getMonth();
+                y = returnDate.getFullYear();
+                now = new Date();
+                returnDateValid =   (d > 0 && d < 32 && m > 0 && m < 13 && y >= now.getFullYear() - 10 && y <= now.getFullYear() + 10);
+                
+                if (!returnDateValid)
+                {
+                    document.getElementById("returnDateError").innerHTML = "Invalid depart date";
+                    document.getElementById("returnDateError").style.color = "red";
+                }
+                else
+                {
+                    document.getElementById("returnDateError").innerHTML = "";
+                }
+                
+
+                console.log(returnDate, returnDateValid, d, m, y)
+
+
+                if(departCityValid && arrivalCityValid && departDateValid && returnDateValid)
+                {
+                    //Search for departCity, returnCity, departDate, returnDate
+                    
+                    //show loader
+                    loader[0].style.display = "block";
+
+                    //Load departure and arrival cities on maps
+
+                    //Send query for airports near the departure city
+
+                    //Send query for airports near the arrival city
+                    
+                    //Send query for departure city and departure date
+
+                    //Send query for arrival city and departure date
+
+                    //Send query for departure city and return date
+
+                    //Send query for arrival city and return date
+                    
+                    //
+
+                }
                 //console.log("City search performed")
             }
 
