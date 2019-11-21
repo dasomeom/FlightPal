@@ -658,14 +658,14 @@
                 // var rectHeight = height/states.length;
                 console.log(dates, rangeArray);
 
-                // var xScale = d3.scaleBand()
-                //     .domain(dates) // input
-                //     //.range([0, 4])
-                //     //.padding([.1])
-                //     .rangeRound([0, width]); // output
-                var xScale = d3.scaleOrdinal()
-                             .domain(dates)
-                             .range([0, width]);
+                var xScale = d3.scaleBand()
+                    .domain(dates) // input
+                    //.range([0, 4])
+                    //.padding([.1])
+                    .rangeRound([0, width]); // output
+                // var xScale = d3.scaleOrdinal()
+                //              .domain(dates)
+                //              .range([0, width]);
 
                 var svg = d3.select("body").append("p").append(elementId).append("svg")
                 .attr("width", width + 2 * margin.left)
@@ -682,11 +682,12 @@
                 .attr("class", "y axis")
                 .call(d3.axisLeft(yScale)); // Create an axis component with d3.axisLeft
 
+                x_adj = 60;
                 sortedData.forEach(function(d){
                     svg.append("rect")
                     .attr("class", "tile")
                     .attr("y", function(){ return yScale(d["count"]);})
-                    .attr("x", function(){ return xScale(d["date"])})
+                    .attr("x", function(){ return xScale(d["date"]) + x_adj})
                     .attr("height", height - yScale(d["count"]) )
                     .attr("width", 15)
                     .style("fill", "blue")
