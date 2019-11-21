@@ -141,6 +141,7 @@
             100% { transform: rotate(360deg); }
             }
 
+            p {page-break-after: always;} 
         </style>
         <meta name="viewport" content="initial-scale=1.0">
 
@@ -150,6 +151,7 @@
         <script src="/lib/utility.js"></script> 
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEvogwuKKRrOFphoADJLjYW4iPBCiTkk8&callback=initMap&libraries=geometry"
         async defer></script>
+        <script src="lib/d3.v5.min.js"></script>
 
 
         
@@ -314,6 +316,9 @@
             var departDate;
             var returnDate;
             var searchRad;
+            var margin = {top: 50, right: 50, bottom: 50, left: 80}
+            , width = 800 - margin.left - margin.right  
+            , height = 400 - margin.top - margin.bottom;
 
             function searchCities(event)
             {
@@ -492,127 +497,267 @@
                     //TODO: Show drop down airport selections for the departure and arrival airports
 
                     var flexDays = 2;
-                    //+- flexDays days from the departure date
-                    var firstDay = new Date(departDate);
-                    firstDay.setDate(firstDay.getDate() - flexDays);
-                    var firstDayUnix = myUtil.getUnixTimeFromDate(firstDay);
+                    var databaseYear = 2018;
 
-                    var lastDay = new Date(departDate);
-                    lastDay.setDate(lastDay.getDate()  + flexDays + 1);
-                    var lastDayUnix = myUtil.getUnixTimeFromDate(lastDay);
-
-                    depQuery = "SELECT * FROM opensky WHERE (";
-
-                    for(i = 0; i < depira.length; i++)
+                    //timeout if things are taking too long
+                    var myVar = setInterval(timeoutFunc, (1*60*60*1000));
+                    function timeoutFunc()
                     {
-                        thisICAO = depira[i]["icao"];
-                        //the last element needs to be anded
-                        andOr = i == depira.length - 1 ? ")) and ": ") or ";
-                        depQuery += "(estdepartureairport='" +  thisICAO + "' or estarrivalairport='" + thisICAO + "'" + andOr;
+                        checkCompletion(true);
                     }
-                    
-                    
-                    depQuery += "(firstseen >= " + firstDayUnix + " and lastseen <= " + lastDayUnix + ")"; 
-                    
-                    console.log(depQuery);
-                    //TODO: wrap with an exception handler
-                    myUtil.sendSQLQuery(depQuery, depQueryCallback);
 
+                    //Retreive data for departure and arrival airports around the departing date in 2018
+                    var thisDay = new Date(departDate);
+                    thisDay.setFullYear(databaseYear);
+                    thisDay.setHours(0,0,0,0);
+                    depQueryDepartDatesCount = 0;
+                    arrQueryDepartDatesCount = 0;
+                    for (d = 0; d <= 2 * flexDays; d++)
+                    {                        
+                        for(i = 0; i < depira.length; i++)
+                        {
+                            thisICAO = depira[i]["icao"];
+                            depQuery = "SELECT COUNT(*) FROM opensky WHERE (estdepartureairport='" +  thisICAO + "' or estarrivalairport='" + thisICAO + "') " ;
+                            firstTimeUnix = myUtil.getUnixTimeFromDate(thisDay);
+                            lastTimeUnix = firstTimeUnix + (24 * 60 * 60);
+                            depQuery += "and (firstseen >= " + firstTimeUnix + " and lastseen <= " + lastTimeUnix + ")";
+                            myUtil.sendSQLQuery(depQuery, depQueryDepartDatesCallback, new Date(thisDay), depira[i]);
+                            console.log(depQuery);
+                            depQueryDepartDatesCount++;
+                        }
+                        for(i = 0; i < arrira.length; i++)
+                        {
+                            thisICAO = arrira[i]["icao"];
+                            depQuery = "SELECT COUNT(*) FROM opensky WHERE (estdepartureairport='" +  thisICAO + "' or estarrivalairport='" + thisICAO + "') " ;
+                            firstTimeUnix = myUtil.getUnixTimeFromDate(thisDay);
+                            lastTimeUnix = firstTimeUnix + (24 * 60 * 60);
+                            depQuery += "and (firstseen >= " + firstTimeUnix + " and lastseen <= " + lastTimeUnix + ")";
+                            myUtil.sendSQLQuery(depQuery, arrQueryDepartDatesCallback, new Date(thisDay), arrira[i]);
+                            console.log(depQuery);
+                            arrQueryDepartDatesCount++;
+                        }
+                        thisDay.setDate(thisDay.getDate() + 1)
+                    }
+
+                    //TODO: wrap with an exception handler
                     var departAirportDepartData = [];
-                    function depQueryCallback(data)
+                    function depQueryDepartDatesCallback(data, date, airport)
                     {
-                        departAirportDepartData = data;
-                        console.log(data);
+                        depQueryDepartDatesCount--;
+                        thisData = {
+                            "date":date.getMonth() + "/" + date.getDate(),
+                            "airport": airport["icao"],
+                            "count": data[0]['COUNT(*)']
+                        }
+                        departAirportDepartData.push(thisData);                        
+                        console.log(data[0]['COUNT(*)'], date, airport["airportname"]);
+                        checkCompletion();
+                    }
+
+                    var arrivalAirportDepartData = [];
+                    function arrQueryDepartDatesCallback(data, date, airport)
+                    {
+                        arrQueryDepartDatesCount--;
+                        
+                        thisData = {
+                            "date":date.getMonth() + "/" + date.getDate(),
+                            "airport": airport["icao"],
+                            "count": data[0]['COUNT(*)']
+                        }
+                        arrivalAirportDepartData.push(thisData);
+                        // arrivalAirportDepartData data;
+                        console.log(data[0]['COUNT(*)'], date, airport["airportname"])
+                        checkCompletion();
                     }
 
 
-                    arrQuery = "SELECT * FROM opensky WHERE (";
-
-                    for(i = 0; i < arrira.length; i++)
+                    function checkCompletion(timeout = false)
                     {
-                        thisICAO = arrira[i]["icao"];
-                        //the last element needs to be anded
-                        andOr = i == arrira.length - 1 ? ")) and ": ") or ";
-                        arrQuery += "(estdepartureairport='" +  thisICAO + "' or estarrivalairport='" + thisICAO + "'" + andOr;
-                    }
-                    
-                    
-                    arrQuery += "(firstseen >= " + firstDayUnix + " and lastseen <= " + lastDayUnix + ")"; 
-                    
-                    console.log(arrQuery);
-                    //TODO: wrap with an exception handler
-                    myUtil.sendSQLQuery(arrQuery, arrQueryCallback);
-
-                    var arriveAirportDepartData = [];
-                    function arrQueryCallback(data)
-                    {
-                        arriveAirportDepartData = data;
-                        console.log(data);
-                    }
-
-                    
-                    //+- flexDays days from the arrival date
-                    var firstDay = new Date(returnDate);
-                    firstDay.setDate(firstDay.getDate() - flexDays);
-                    var firstDayUnix = myUtil.getUnixTimeFromDate(firstDay);
-
-                    var lastDay = new Date(returnDate);
-                    lastDay.setDate(lastDay.getDate()  + flexDays + 1);
-                    var lastDayUnix = myUtil.getUnixTimeFromDate(lastDay);
-
-                    depQuery = "SELECT * FROM opensky WHERE (";
-
-                    for(i = 0; i < depira.length; i++)
-                    {
-                        thisICAO = depira[i]["icao"];
-                        //the last element needs to be anded
-                        andOr = i == depira.length - 1 ? ")) and ": ") or ";
-                        depQuery += "(estdepartureairport='" +  thisICAO + "' or estarrivalairport='" + thisICAO + "'" + andOr;
-                    }
-                    
-                    
-                    depQuery += "(firstseen >= " + firstDayUnix + " and lastseen <= " + lastDayUnix + ")"; 
-                    
-                    console.log(depQuery);
-                    //TODO: wrap with an exception handler
-                    myUtil.sendSQLQuery(depQuery, depQueryCallback);
-
-                    var departAirportReturnData = [];
-                    function depQueryReturnCallback(data)
-                    {
-                        departAirportReturnData = data;
-                        console.log(data);
-                    }
-
-
-                    arrQuery = "SELECT * FROM opensky WHERE (";
-
-                    for(i = 0; i < arrira.length; i++)
-                    {
-                        thisICAO = arrira[i]["icao"];
-                        //the last element needs to be anded
-                        andOr = i == arrira.length - 1 ? ")) and ": ") or ";
-                        arrQuery += "(estdepartureairport='" +  thisICAO + "' or estarrivalairport='" + thisICAO + "'" + andOr;
-                    }
-                    
-                    
-                    arrQuery += "(firstseen >= " + firstDayUnix + " and lastseen <= " + lastDayUnix + ")"; 
-                    
-                    console.log(arrQuery);
-                    //TODO: wrap with an exception handler
-                    myUtil.sendSQLQuery(arrQuery, arrQueryReturnCallback);
-
-                    var arriveAirportReturnData = [];
-                    function arrQueryReturnCallback(data)
-                    {
-                        arriveAirportReturnData = data;
-                        console.log(data);
+                        //Check for completion and remove progress indicator and any lingering queries
+                        if((depQueryDepartDatesCount == 0 && arrQueryDepartDatesCount == 0) || timeout)
+                        {
+                            console.log(timeout, depQueryDepartDatesCount, arrQueryDepartDatesCount);
+                            loader[0].style.display = "none";
+                            if (!timeout)
+                            {
+                                ps = "departAirportDepartDate";
+                                displayBarChart(departAirportDepartData, ps);
+                            }
+                        }
                     }
 
                 }
-                //console.log("City search performed")
+
+               
+                console.log("City search performed")
             }
 
+
+
+            function displayBarChart(airportDateData, elementId)
+            {
+                console.log(airportDateData);
+
+                d3.select("body").select(elementId).remove();
+                
+                var yMin = airportDateData[0]["count"];
+                var yMax = yMin;
+                sortedData = []
+                
+                for (i = 0; i < airportDateData.length; i++)
+                {
+                    thisCount = airportDateData[i]["count"];
+                    yMin = Math.min(yMin, thisCount);
+                    yMax = Math.max(yMax, thisCount);
+                    sortedData.push(airportDateData[i]);
+                }
+
+                sortedData.sort(sortDict);
+                dates = [];
+                sortedData.forEach(function(d)
+                {
+                    dates.push(d["date"])
+                });
+
+                function sortDict(a, b)
+                {
+                    as = a["date"].split("/");
+                    bs = b["date"].split("/");
+                    aDay = as[0];
+                    aMon = as[1];
+                    bDay = bs[0];
+                    bMon = bs[1];
+
+                    if (aMon < bMon)
+                    {
+                        return -1;
+                    }
+                    if (aMon > bMon)
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        if (aDay < bDay)
+                        {
+                            return -1;
+                        }
+                        if (aDay > bDay)
+                        {
+                            return 1;
+                        }
+                    }
+                    return 0;
+                }
+
+                yScale = d3.scaleLinear()
+                         .domain([0, yMax])
+                         .range([height, 0]);
+                
+                var rangeArray = Array.from(Array(dates.length).keys());
+                // var rectHeight = height/states.length;
+                console.log(dates, rangeArray);
+
+                // var xScale = d3.scaleBand()
+                //     .domain(dates) // input
+                //     //.range([0, 4])
+                //     //.padding([.1])
+                //     .rangeRound([0, width]); // output
+                var xScale = d3.scaleOrdinal()
+                             .domain(dates)
+                             .range([0, width]);
+
+                var svg = d3.select("body").append("p").append(elementId).append("svg")
+                .attr("width", width + 2 * margin.left)
+                .attr("height", height + 2 * margin.top)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+
+                svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(xScale)); // Create an axis component with d3.axisBottom
+
+                svg.append("g")
+                .attr("class", "y axis")
+                .call(d3.axisLeft(yScale)); // Create an axis component with d3.axisLeft
+
+                sortedData.forEach(function(d){
+                    svg.append("rect")
+                    .attr("class", "tile")
+                    .attr("y", function(){ return yScale(d["count"]);})
+                    .attr("x", function(){ return xScale(d["date"])})
+                    .attr("height", height - yScale(d["count"]) )
+                    .attr("width", 15)
+                    .style("fill", "blue")
+                });
+
+            }
+
+            //test displayBarChart
+            testDisplayBarChart()
+            
+            function testDisplayBarChart()
+            {
+                testData = [
+                    {
+                        "date": "01/20",
+                        "airport": "KATL",
+                        "count":143
+                    },
+                    {
+                        "date": "01/21",
+                        "airport": "KATL",
+                        "count":70
+                    },
+                    {
+                        "date": "01/22",
+                        "airport": "KATL",
+                        "count":30
+                    },
+                    {
+                        "date": "01/23",
+                        "airport": "KATL",
+                        "count":20
+                    },
+                    {
+                        "date": "01/24",
+                        "airport": "KATL",
+                        "count":50
+                    },
+                    // {
+                    //     "date": "01/20",
+                    //     "airport": "BATL",
+                    //     "count":10
+                    // },
+                    // {
+                    //     "date": "01/21",
+                    //     "airport": "BATL",
+                    //     "count":15
+                    // },
+                    // {
+                    //     "date": "01/22",
+                    //     "airport": "BATL",
+                    //     "count":220
+                    // },
+                    // {
+                    //     "date": "01/23",
+                    //     "airport": "BATL",
+                    //     "count":50
+                    // },
+                    // {
+                    //     "date": "01/24",
+                    //     "airport": "BATL",
+                    //     "count":60
+                    // }
+                ]
+
+                console.log(testData);
+                displayBarChart(testData, "test")
+
+            }
+            
+            
             //Testing db query
             // sqlQuery = "SELECT * FROM opensky WHERE firstseen >= 1530475840 AND lastseen <= 1530486080";
             // myUtil.sendSQLQuery(sqlQuery, sqlQueryCallback);
