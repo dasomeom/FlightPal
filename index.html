@@ -148,7 +148,7 @@
 
     <body>  
         <script src="/lib/utility.js"></script> 
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEvogwuKKRrOFphoADJLjYW4iPBCiTkk8&callback=initMap"
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEvogwuKKRrOFphoADJLjYW4iPBCiTkk8&callback=initMap&libraries=geometry"
         async defer></script>
 
 
@@ -171,13 +171,24 @@
                             <input type="text" id="arrCityName" placeholder="Arrival City">
                             <span id="arrCityError"></span>
                         </div>
+                        <div>
                         <input type="text" id="departDate" placeholder="Depart" onfocus="(this.type='date')"> 
                         <span id="departDateError"></span>
+                        </div>
+                        <div>
                         <input type="text" id="returnDate" placeholder="Return" onfocus="(this.type='date')">
                         <span id="returnDateError"></span>
-                        <div>
-                            <button onclick="searchCities(event)">Search</button>
                         </div>
+                        <select id="searchRadius">
+                                <option value="20">20 mile rad</option>
+                                <option value="30">30 mile rad</option>
+                                <option value="40">40 mile rad</option>
+                                <option value="50">50 mile rad</option>
+                        </select>
+                        <div>
+                            <button id = "searchButton" onclick="searchCities(event)">Search</button>
+                        </div>
+                        
                         <div class="loader"></div>     
                         
              
@@ -194,14 +205,19 @@
           
         
         <script type="text/javascript">
-            var map;
+           
+
+            var mapHandler;
             function initMap() 
             {
-                map = new google.maps.Map(document.getElementById('map'), {
-                center: {lat: 40, lng: -95},
-                zoom: 3.8
+                mapHandler = new google.maps.Map(document.getElementById('map'), {
+                    center: {lat: 40, lng: -95},
+                    zoom: 3.8
                 });
 
+                google.maps.Circle.prototype.contains = function(latLng) {
+                return this.getBounds().contains(latLng) && google.maps.geometry.spherical.computeDistanceBetween(this.getCenter(), latLng) <= this.getRadius();
+                }
                 // var latLng = new google.maps.LatLng(40,-100);
                 // var marker = new google.maps.Marker({
                 //     position: latLng,
@@ -209,6 +225,8 @@
                 // });
 
             }
+
+           
 
             function openTab(evt, catName) 
             {
@@ -234,6 +252,11 @@
                 evt.currentTarget.className += " active";
             }
 
+            depCityHandle = document.getElementById("depCityName");
+            arrCityHandle = document.getElementById("arrCityName");
+            depDateHandle = document.getElementById("departDate");
+            retDateHandle = document.getElementById("returnDate");
+
             // Get the element with id="defaultOpen" and click on it
             document.getElementById("defaultOpen").click();
             loader = document.getElementsByClassName("loader");
@@ -243,40 +266,64 @@
             myUtil = new util();
 
             myUtil.sendSQLQuery("SELECT * FROM cities", citiesCallback)
-            cities = []
-            cityNames = []
-            stateNames = []
+            var cities = []
+            var cityNames = []
+            var stateNames = []
 
             function citiesCallback(data)
             {
-                cities = data.slice(1,data.length)
-                console.log(cities)
+                cities = data.slice(1,data.length);
+                console.log(cities);
                 
                 for (i = 0; i < cities.length; i++)
                 {
-                    cityNames.push(cities[i]["city"]);
-                    stateNames.push(cities[i]["admin_name"])
+                    cityNames.push(cities[i]["city_ascii"]);
+                    stateNames.push(cities[i]["admin_name"]);
                 }
                 console.log(cityNames);
             }
             
+            var airports = []
+            myUtil.sendSQLQuery("SELECT * FROM airports", airportsCallback);
+
+            function airportsCallback(data)
+            {
+                airports = data.slice(1, data.length)
+                console.log(airports);
+            }
+
+
+            //enable autocomplete on the departure city and arrival city entry boxes
             myUtil.autocomplete(document.getElementById("depCityName"), cityNames, stateNames);
             myUtil.autocomplete(document.getElementById("arrCityName"), cityNames, stateNames);
+            depCityHandle.value = "Atlanta, Georgia";
+            arrCityHandle.value = "Dallas, Texas";
 
-
-
+            //Depart and Return date defaults TODO: Remove these
+            depDateHandle.focus();
+            retDateHandle.focus();
+            depDateHandle.value = "2020-01-02";
+            depDateHandle.text = "01/02/2020"
+            retDateHandle.value = "2020-01-20";
+            retDateHandle.text = "01/20/2020";
+            depDateHandle.blur();
+            retDateHandle.blur();
+            
             var departCity;
             var arrivalCity;
             var departDate;
             var returnDate;
+            var searchRad;
+
             function searchCities(event)
             {
                 event.preventDefault();
                 //Form verification
                 //Departure city verification
-                dp = document.getElementById("depCityName").value.split(", ");
+
+                dp = depCityHandle.value.split(", ");
                 departCity = cities.find(function(e){
-                    return e["city"] === dp[0] && e["admin_name"] === dp[1]; 
+                    return e["city_ascii"] === dp[0] && e["admin_name"] === dp[1]; 
                 });
                 departCityValid = departCity != undefined
                 console.log(dp, departCity, departCityValid)
@@ -292,9 +339,9 @@
                 }
 
                 //Arrival city verification
-                dp = document.getElementById("arrCityName").value.split(", ");
+                dp = arrCityHandle.value.split(", ");
                 arrivalCity = cities.find(function(e){
-                    return e["city"] === dp[0] && e["admin_name"] === dp[1]; 
+                    return e["city_ascii"] === dp[0] && e["admin_name"] === dp[1]; 
                 });
                 arrivalCityValid = arrivalCity != undefined
                 console.log(dp, arrivalCity, arrivalCityValid)
@@ -313,16 +360,19 @@
                 //Arrival city verification
 
                 //Depart date verification
-                dp = document.getElementById("departDate").value.split("-");
-                departDate =  new Date(dp[0], dp[1], dp[2])
+                dp = depDateHandle.value.split("-");
+                // console.log(depDateHandle.value);
+                departDate =  new Date(dp[0], dp[1], dp[2]);
+                departDate.setMonth(departDate.getMonth() - 1);
                 d = departDate.getDate();
                 m = departDate.getMonth();
                 y = departDate.getFullYear();
                 now = new Date();
-                departDateValid =   (d > 0 && d < 32 && m > 0 && m < 13 && y >= now.getFullYear() - 10 && y <= now.getFullYear() + 10);
+                departDateValid =   (d > 0 && d < 32 && m >= 0 && m < 13 && departDate >= now);
                 
                 if (!departDateValid)
                 {
+                    console.log(departDate, d, m, y);
                     document.getElementById("departDateError").innerHTML = "Invalid depart date";
                     document.getElementById("departDateError").style.color = "red";
                 }
@@ -332,17 +382,19 @@
                 }
 
                 //Return date verification
-                dp = document.getElementById("returnDate").value.split("-");
-                returnDate =  new Date(dp[0], dp[1], dp[2])
+                dp = retDateHandle.value.split("-");
+                returnDate =  new Date(dp[0], dp[1], dp[2]);
+                returnDate.setMonth(returnDate.getMonth() - 1);
                 d = returnDate.getDate();
                 m = returnDate.getMonth();
                 y = returnDate.getFullYear();
                 now = new Date();
-                returnDateValid =   (d > 0 && d < 32 && m > 0 && m < 13 && y >= now.getFullYear() - 10 && y <= now.getFullYear() + 10);
+                returnDateValid =   (d > 0 && d < 32 && m >= 0 && m < 13 && departDate >= now && departDate <= returnDate);
                 
                 if (!returnDateValid)
                 {
-                    document.getElementById("returnDateError").innerHTML = "Invalid depart date";
+                    console.log(returnDate, d, m, y);
+                    document.getElementById("returnDateError").innerHTML = "Invalid return date";
                     document.getElementById("returnDateError").style.color = "red";
                 }
                 else
@@ -356,26 +408,206 @@
 
                 if(departCityValid && arrivalCityValid && departDateValid && returnDateValid)
                 {
-                    //Search for departCity, returnCity, departDate, returnDate
-                    
+                    //Grey out entry boxes and search button
+                    depCityHandle.disabled = true;
+                    arrCityHandle.disabled = true;
+                    depDateHandle.disabled = true;
+                    retDateHandle.disabled = true;
+                    document.getElementById("searchButton").disabled = true;
+                    document.getElementById("searchRadius").disabled = true;
                     //show loader
                     loader[0].style.display = "block";
 
-                    //Load departure and arrival cities on maps
-
-                    //Send query for airports near the departure city
-
-                    //Send query for airports near the arrival city
+                     //Load departure and arrival cities on maps
+                    bounds  = new google.maps.LatLngBounds();
                     
-                    //Send query for departure city and departure date
+                    var depLatLong = new google.maps.LatLng(departCity["lat"],departCity["lng"]);
+                    console.log(depLatLong,departCity["lat"],departCity["lng"]);
+                    var depMarker = new google.maps.Marker({
+                        position: depLatLong,
+                        map: mapHandler,
+                    });
+                    depMarker.setTitle(departCity["city_ascii"]);
+                    loc = new google.maps.LatLng(depMarker.position.lat(), depMarker.position.lng());
+                    bounds.extend(loc);
 
-                    //Send query for arrival city and departure date
+                    var arrLatLong = new google.maps.LatLng(arrivalCity["lat"],arrivalCity["lng"]);
+                    console.log(arrLatLong,arrivalCity["lat"],arrivalCity["lng"]);
+                    var arrMarker = new google.maps.Marker({
+                        position: arrLatLong,
+                        map: mapHandler,
+                    });
+                    loc = new google.maps.LatLng(arrMarker.position.lat(), arrMarker.position.lng());
+                    bounds.extend(loc);
 
-                    //Send query for departure city and return date
+                    mapHandler.fitBounds(bounds);       //auto-zoom
+                    mapHandler.panToBounds(bounds);     //auto-center
 
-                    //Send query for arrival city and return date
+                    //find departure airports maximum radius
+                    searchRad = myUtil.milesToMeters(Number(document.getElementById("searchRadius").value));
+                    console.log(searchRad);
+                    depCircle = new google.maps.Circle({
+                        map: mapHandler,
+                        center: depLatLong,
+                        radius: searchRad,
+                    });
+                   
+                    //console.log(depCircle.contains(arrLatLong));
+                    //in radius airports
+                    depira = []
+                    for(i = 0; i < airports.length; i++)
+                    {
+                        var airportLatLog = new google.maps.LatLng(airports[i]["latitude"], airports[i]["longitude"]);
+                        if (depCircle.contains(airportLatLog))
+                        {
+                            depira.push(airports[i]);
+                        }
+                    }
+
+                    console.log(depira);
+
+                    //find arrival airports within maximum radius
+                    searchRad = myUtil.milesToMeters(Number(document.getElementById("searchRadius").value));
+                    console.log(searchRad);
+                    arrCircle = new google.maps.Circle({
+                        map: mapHandler,
+                        center: arrLatLong,
+                        radius: searchRad,
+                    });
+                   
+                    //console.log(depCircle.contains(arrLatLong));
+                    //in radius airports
+                    arrira = []
+                    for(i = 0; i < airports.length; i++)
+                    {
+                        var airportLatLog = new google.maps.LatLng(airports[i]["latitude"], airports[i]["longitude"]);
+                        if (arrCircle.contains(airportLatLog))
+                        {
+                            arrira.push(airports[i]);
+                        }
+                    }
+
+                    console.log(arrira);
                     
-                    //
+                    //TODO: Show drop down airport selections for the departure and arrival airports
+
+                    var flexDays = 2;
+                    //+- flexDays days from the departure date
+                    var firstDay = new Date(departDate);
+                    firstDay.setDate(firstDay.getDate() - flexDays);
+                    var firstDayUnix = myUtil.getUnixTimeFromDate(firstDay);
+
+                    var lastDay = new Date(departDate);
+                    lastDay.setDate(lastDay.getDate()  + flexDays + 1);
+                    var lastDayUnix = myUtil.getUnixTimeFromDate(lastDay);
+
+                    depQuery = "SELECT * FROM opensky WHERE (";
+
+                    for(i = 0; i < depira.length; i++)
+                    {
+                        thisICAO = depira[i]["icao"];
+                        //the last element needs to be anded
+                        andOr = i == depira.length - 1 ? ")) and ": ") or ";
+                        depQuery += "(estdepartureairport='" +  thisICAO + "' or estarrivalairport='" + thisICAO + "'" + andOr;
+                    }
+                    
+                    
+                    depQuery += "(firstseen >= " + firstDayUnix + " and lastseen <= " + lastDayUnix + ")"; 
+                    
+                    console.log(depQuery);
+                    //TODO: wrap with an exception handler
+                    myUtil.sendSQLQuery(depQuery, depQueryCallback);
+
+                    var departAirportDepartData = [];
+                    function depQueryCallback(data)
+                    {
+                        departAirportDepartData = data;
+                        console.log(data);
+                    }
+
+
+                    arrQuery = "SELECT * FROM opensky WHERE (";
+
+                    for(i = 0; i < arrira.length; i++)
+                    {
+                        thisICAO = arrira[i]["icao"];
+                        //the last element needs to be anded
+                        andOr = i == arrira.length - 1 ? ")) and ": ") or ";
+                        arrQuery += "(estdepartureairport='" +  thisICAO + "' or estarrivalairport='" + thisICAO + "'" + andOr;
+                    }
+                    
+                    
+                    arrQuery += "(firstseen >= " + firstDayUnix + " and lastseen <= " + lastDayUnix + ")"; 
+                    
+                    console.log(arrQuery);
+                    //TODO: wrap with an exception handler
+                    myUtil.sendSQLQuery(arrQuery, arrQueryCallback);
+
+                    var arriveAirportDepartData = [];
+                    function arrQueryCallback(data)
+                    {
+                        arriveAirportDepartData = data;
+                        console.log(data);
+                    }
+
+                    
+                    //+- flexDays days from the arrival date
+                    var firstDay = new Date(returnDate);
+                    firstDay.setDate(firstDay.getDate() - flexDays);
+                    var firstDayUnix = myUtil.getUnixTimeFromDate(firstDay);
+
+                    var lastDay = new Date(returnDate);
+                    lastDay.setDate(lastDay.getDate()  + flexDays + 1);
+                    var lastDayUnix = myUtil.getUnixTimeFromDate(lastDay);
+
+                    depQuery = "SELECT * FROM opensky WHERE (";
+
+                    for(i = 0; i < depira.length; i++)
+                    {
+                        thisICAO = depira[i]["icao"];
+                        //the last element needs to be anded
+                        andOr = i == depira.length - 1 ? ")) and ": ") or ";
+                        depQuery += "(estdepartureairport='" +  thisICAO + "' or estarrivalairport='" + thisICAO + "'" + andOr;
+                    }
+                    
+                    
+                    depQuery += "(firstseen >= " + firstDayUnix + " and lastseen <= " + lastDayUnix + ")"; 
+                    
+                    console.log(depQuery);
+                    //TODO: wrap with an exception handler
+                    myUtil.sendSQLQuery(depQuery, depQueryCallback);
+
+                    var departAirportReturnData = [];
+                    function depQueryReturnCallback(data)
+                    {
+                        departAirportReturnData = data;
+                        console.log(data);
+                    }
+
+
+                    arrQuery = "SELECT * FROM opensky WHERE (";
+
+                    for(i = 0; i < arrira.length; i++)
+                    {
+                        thisICAO = arrira[i]["icao"];
+                        //the last element needs to be anded
+                        andOr = i == arrira.length - 1 ? ")) and ": ") or ";
+                        arrQuery += "(estdepartureairport='" +  thisICAO + "' or estarrivalairport='" + thisICAO + "'" + andOr;
+                    }
+                    
+                    
+                    arrQuery += "(firstseen >= " + firstDayUnix + " and lastseen <= " + lastDayUnix + ")"; 
+                    
+                    console.log(arrQuery);
+                    //TODO: wrap with an exception handler
+                    myUtil.sendSQLQuery(arrQuery, arrQueryReturnCallback);
+
+                    var arriveAirportReturnData = [];
+                    function arrQueryReturnCallback(data)
+                    {
+                        arriveAirportReturnData = data;
+                        console.log(data);
+                    }
 
                 }
                 //console.log("City search performed")
