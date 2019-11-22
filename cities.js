@@ -80,10 +80,9 @@ function searchCities(event)
     //Depart date verification
     dp = depDateHandle.value.split("-");
     // console.log(depDateHandle.value);
-    departDate =  new Date(dp[0], dp[1], dp[2]);
-    departDate.setMonth(departDate.getMonth() - 1);
+    departDate =  new Date(dp[0], dp[1]-1, dp[2]);
     d = departDate.getDate();
-    m = departDate.getMonth();
+    m = departDate.getMonth() + 1;
     y = departDate.getFullYear();
     now = new Date();
     departDateValid =   (d > 0 && d < 32 && m >= 0 && m < 13 && departDate >= now);
@@ -101,13 +100,12 @@ function searchCities(event)
 
     //Return date verification
     dp = retDateHandle.value.split("-");
-    returnDate =  new Date(dp[0], dp[1], dp[2]);
-    returnDate.setMonth(returnDate.getMonth() - 1);
+    returnDate =  new Date(dp[0], dp[1]-1, dp[2]);
     d = returnDate.getDate();
-    m = returnDate.getMonth();
+    m = returnDate.getMonth() + 1;
     y = returnDate.getFullYear();
     now = new Date();
-    returnDateValid =   (d > 0 && d < 32 && m >= 0 && m < 13 && departDate >= now && departDate <= returnDate);
+    returnDateValid =   (d > 0 && d < 32 && m > 0 && m < 13 && departDate >= now && departDate <= returnDate);
     
     if (!returnDateValid)
     {
@@ -123,16 +121,20 @@ function searchCities(event)
 
     console.log(returnDate, returnDateValid, d, m, y)
 
+    function setSearchState(enabled)
+    {
+        depCityHandle.disabled = !enabled;
+        arrCityHandle.disabled = !enabled;
+        depDateHandle.disabled = !enabled;
+        retDateHandle.disabled = !enabled;
+        document.getElementById("searchButton").disabled = !enabled;
+        document.getElementById("searchRadius").disabled = !enabled;
+    }
 
     if(departCityValid && arrivalCityValid && departDateValid && returnDateValid)
     {
+        setSearchState(false);
         //Grey out entry boxes and search button
-        depCityHandle.disabled = true;
-        arrCityHandle.disabled = true;
-        depDateHandle.disabled = true;
-        retDateHandle.disabled = true;
-        document.getElementById("searchButton").disabled = true;
-        document.getElementById("searchRadius").disabled = true;
         //show loader
         loader[0].style.display = "block";
 
@@ -226,14 +228,16 @@ function searchCities(event)
         depQueryDepartDatesCount = 0;
         arrQueryDepartDatesCount = 0;
         for (d = 0; d <= 2 * flexDays; d++)
-        {                        
+        { 
+            var dateString = myUtil.formatDate(thisDay);                       
             for(i = 0; i < depira.length; i++)
             {
                 thisICAO = depira[i]["icao"];
-                depQuery = "SELECT COUNT(*) FROM opensky WHERE (estdepartureairport='" +  thisICAO + "' or estarrivalairport='" + thisICAO + "') " ;
-                firstTimeUnix = myUtil.getUnixTimeFromDate(thisDay);
-                lastTimeUnix = firstTimeUnix + (24 * 60 * 60);
-                depQuery += "and (firstseen >= " + firstTimeUnix + " and lastseen <= " + lastTimeUnix + ")";
+                // depQuery = "SELECT COUNT(*) FROM opensky WHERE (estdepartureairport='" +  thisICAO + "' or estarrivalairport='" + thisICAO + "') " ;
+                // firstTimeUnix = myUtil.getUnixTimeFromDate(thisDay);
+                // lastTimeUnix = firstTimeUnix + (24 * 60 * 60);
+                // depQuery += "and (firstseen >= " + firstTimeUnix + " and lastseen <= " + lastTimeUnix + ")";
+                depQuery = "SELECT * FROM openskyByDates WHERE Date = '" + dateString + "' and estdepartureairport = '" + thisICAO + "'";
                 myUtil.sendSQLQuery(depQuery, depQueryDepartDatesCallback, new Date(thisDay), depira[i]);
                 console.log(depQuery);
                 depQueryDepartDatesCount++;
@@ -241,10 +245,11 @@ function searchCities(event)
             for(i = 0; i < arrira.length; i++)
             {
                 thisICAO = arrira[i]["icao"];
-                depQuery = "SELECT COUNT(*) FROM opensky WHERE (estdepartureairport='" +  thisICAO + "' or estarrivalairport='" + thisICAO + "') " ;
-                firstTimeUnix = myUtil.getUnixTimeFromDate(thisDay);
-                lastTimeUnix = firstTimeUnix + (24 * 60 * 60);
-                depQuery += "and (firstseen >= " + firstTimeUnix + " and lastseen <= " + lastTimeUnix + ")";
+                // depQuery = "SELECT COUNT(*) FROM opensky WHERE (estdepartureairport='" +  thisICAO + "' or estarrivalairport='" + thisICAO + "') " ;
+                // firstTimeUnix = myUtil.getUnixTimeFromDate(thisDay);
+                // lastTimeUnix = firstTimeUnix + (24 * 60 * 60);
+                // depQuery += "and (firstseen >= " + firstTimeUnix + " and lastseen <= " + lastTimeUnix + ")";
+                depQuery = "SELECT * FROM openskyByDates WHERE Date = '" + dateString + "' and estdepartureairport = '" + thisICAO + "'";
                 myUtil.sendSQLQuery(depQuery, arrQueryDepartDatesCallback, new Date(thisDay), arrira[i]);
                 console.log(depQuery);
                 arrQueryDepartDatesCount++;
@@ -257,14 +262,17 @@ function searchCities(event)
         function depQueryDepartDatesCallback(data, date, airport)
         {
             depQueryDepartDatesCount--;
-            thisData = {
-                "date":date.getMonth() + "/" + date.getDate(),
-                "airport": airport["icao"],
-                "airportName": airport["airportname"],
-                "count": data[0]['COUNT(*)']
+            if (data.length > 0)
+            {
+                thisData = {
+                    "date": data[0]["Date"],
+                    "airport": data[0]["estdepartureairport"],
+                    "airportName": airport["airportname"],
+                    "count": data[0]['count']
+                }
+                departAirportDepartData.push(thisData);                        
+                console.log(thisData);
             }
-            departAirportDepartData.push(thisData);                        
-            console.log(data[0]['COUNT(*)'], date, airport["airportname"]);
             checkCompletion();
         }
 
@@ -273,15 +281,18 @@ function searchCities(event)
         {
             arrQueryDepartDatesCount--;
             
-            thisData = {
-                "date":date.getMonth() + "/" + date.getDate(),
-                "airport": airport["icao"],
-                "airportName": airport["airportname"],
-                "count": data[0]['COUNT(*)']
+            if (data.length > 0)
+            {
+                thisData = {
+                    "date": data[0]["Date"],
+                    "airport": data[0]["estdepartureairport"],
+                    "airportName": airport["airportname"],
+                    "count": data[0]['count']
+                }
+                arrivalAirportDepartData.push(thisData);
+                // arrivalAirportDepartData data;
+                console.log(thisData);
             }
-            arrivalAirportDepartData.push(thisData);
-            // arrivalAirportDepartData data;
-            console.log(data[0]['COUNT(*)'], date, airport["airportname"])
             checkCompletion();
         }
 
@@ -299,6 +310,8 @@ function searchCities(event)
                     console.log("search completed displaying bar chart: ", departAirportDepartData);
                     displayBarChart(departAirportDepartData, ps);
                 }
+                //reenable search on page
+                setSearchState(true);
             }
         }
 

@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS opensky;
 DROP TABLE IF EXISTS airports;
 DROP TABLE IF EXISTS airlines;
 DROP TABLE IF EXISTS cities;
+DROP TABLE IF EXISTS openskyByDates;
 
 
 -- Create tables
@@ -21,6 +22,8 @@ create table airlines(count integer, name text, ign text, iata text, icao text,
 
 create table cities(city text, city_ascii text,	lat	real, lng real, country text, iso2 text, iso3 text,	admin_name text, capital text, population integer, id integer);
 
+create table openskyByDates(Date text, estdepartureairport text, count integer);
+
 .tables
 
 
@@ -30,10 +33,16 @@ create table cities(city text, city_ascii text,	lat	real, lng real, country text
 .import ./airlines.csv airlines
 .import ./worldcities.csv cities
 
+
+
+INSERT INTO openskyByDates
+SELECT date(firstseen,'unixepoch') as Date, estdepartureairport, count(estdepartureairport) as count 
+FROM opensky
+GROUP BY estdepartureairport, Date;
+
+
 SELECT COUNT(*) FROM opensky;
 SELECT COUNT(*) FROM airports;
 SELECT COUNT(*) FROM airlines;
-SELECT COUNT(*) FROM cities
-
-
-
+SELECT COUNT(*) FROM cities;
+SELECT COUNT(*) FROM openskyByDates;
