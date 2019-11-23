@@ -155,55 +155,61 @@
             <button class="tablinks" onclick="openTab(event, 'Cities')" id="defaultOpen">Cities</button>
             <button class="tablinks" onclick="openTab(event, 'Airports')">Airports</button>
             </div>
-            <!-- Tab content -->
-            <div id="Cities" class="tabcontent">
-                <form id="entryForm" action="" autocomplete="off">
-                    <div id="citiesmap"></div>
-                    <h3>Flight Data by City </h3>
-                    <!-- <p> -->
-                        <div class="autocomplete">
-                            <input type="text" id="depCityName" placeholder="Departure City">
-                            <span id="depCityError"></span>
-                        </div>
-                        <div class="autocomplete">
-                            <input type="text" id="arrCityName" placeholder="Arrival City">
-                            <span id="arrCityError"></span>
-                        </div>
-                        <div>
-                        <input type="text" id="departDate" placeholder="Depart" onfocus="(this.type='date')"> 
-                        <span id="departDateError"></span>
-                        </div>
-                        <div>
-                        <input type="text" id="returnDate" placeholder="Return" onfocus="(this.type='date')">
-                        <span id="returnDateError"></span>
-                        </div>
-                        <select id="searchRadius">
-                                <option value="20">20 mile rad</option>
-                                <option value="30">30 mile rad</option>
-                                <option value="40">40 mile rad</option>
-                                <option value="50">50 mile rad</option>
-                        </select>
-                        <div>
-                            <button id = "searchButton" onclick="searchCities(event)">Search</button>
-                        </div>
-                        
-                        <div class="loader"></div>     
-                </form>
-                <div id = "graphs">
-                </div>
-            </div>
+        <!-- Tab content -->
+        <div id="Cities" class="tabcontent">
+            <form id="entryForm" action="" autocomplete="off">
+                <div id="citiesmap"></div>
+                <h3>Flight Data by City </h3>
+                <!-- <p> -->
+                    <div class="autocomplete">
+                        <input type="text" id="depCityName" placeholder="Departure City">
+                        <span id="depCityError"></span>
+                    </div>
+                    <div class="autocomplete">
+                        <input type="text" id="arrCityName" placeholder="Arrival City">
+                        <span id="arrCityError"></span>
+                    </div>
+                    <div>
+                    <input type="text" id="departDate" placeholder="Depart" onfocus="(this.type='date')"> 
+                    <span id="departDateError"></span>
+                    </div>
+                    <div>
+                    <input type="text" id="returnDate" placeholder="Return" onfocus="(this.type='date')">
+                    <span id="returnDateError"></span>
+                    </div>
+                    <select id="searchRadius">
+                            <option value="20">20 mile rad</option>
+                            <option value="30">30 mile rad</option>
+                            <option value="40">40 mile rad</option>
+                            <option value="50">50 mile rad</option>
+                    </select>
+                    <div>
+                        <button id = "searchButton" onclick="searchCities(event)">Search</button>
+                    </div>
+                    
+                    <div class="loader"></div>     
+            </form>
+            <div id = "graph1"></div>
+            <div id = "graph2"></div>
+            <div id = "graph3"></div>
+            <div id = "graph4"></div>
+
+        </div>
 
 
-            <div id="Airports" class="tabcontent">
-                <form id="entryForm" action="" autocomplete="off">
-                    <div id="airportsmap"></div>
-                </form>
-            </div>
+        <div id="Airports" class="tabcontent">
+            <form id="entryForm" action="" autocomplete="off">
+                <div id="airportsmap"></div>
+            </form>
+        </div>
           
         
         <script type="text/javascript">
             var citiesMapHandler;
             var airportsMapHandler;
+
+            loader = document.getElementsByClassName("loader");
+            loader[0].style.display = "block";
 
             function initMap() 
             {
