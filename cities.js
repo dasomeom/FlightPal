@@ -30,15 +30,25 @@ var departDate;
 var returnDate;
 var searchRad;
 var margin = {top: 50, right: 50, bottom: 50, left: 80}
-, width = 500 - margin.left - margin.right  
-, height = 350 - margin.top - margin.bottom;
+, width = 800 - margin.left - margin.right  
+, height = 400 - margin.top - margin.bottom;
+var markers = [];
+var circles = [];
 
 function searchCities(event)
 {
     event.preventDefault();
+    // clear all markers
+    markers.forEach(function(d){
+        d.setMap(null);
+    });
+
+    circles.forEach(function(d){
+        d.setMap(null);
+    });
+
     //Form verification
     //Departure city verification
-
     dp = depCityHandle.value.split(", ");
     departCity = cities.find(function(e){
         return e["city_ascii"].toUpperCase() === dp[0].toUpperCase() && 
@@ -141,7 +151,7 @@ function searchCities(event)
         loader[0].style.display = "block";
 
          //Load departure and arrival cities on maps
-        bounds  = new google.maps.LatLngBounds();
+        var bounds  = new google.maps.LatLngBounds();
         
         var depLatLong = new google.maps.LatLng(departCity["lat"],departCity["lng"]);
         console.log(depLatLong,departCity["lat"],departCity["lng"]);
@@ -152,6 +162,7 @@ function searchCities(event)
         depMarker.setTitle(departCity["city_ascii"]);
         loc = new google.maps.LatLng(depMarker.position.lat(), depMarker.position.lng());
         bounds.extend(loc);
+        markers.push(depMarker);
 
         var arrLatLong = new google.maps.LatLng(arrivalCity["lat"],arrivalCity["lng"]);
         console.log(arrLatLong,arrivalCity["lat"],arrivalCity["lng"]);
@@ -161,6 +172,7 @@ function searchCities(event)
         });
         loc = new google.maps.LatLng(arrMarker.position.lat(), arrMarker.position.lng());
         bounds.extend(loc);
+        markers.push(arrMarker);
 
         citiesMapHandler.fitBounds(bounds);       //auto-zoom
         citiesMapHandler.panToBounds(bounds);     //auto-center
@@ -173,7 +185,8 @@ function searchCities(event)
             center: depLatLong,
             radius: searchRad,
         });
-       
+        circles.push(depCircle);
+
         //console.log(depCircle.contains(arrLatLong));
         //in radius airports
         depira = []
@@ -196,7 +209,8 @@ function searchCities(event)
             center: arrLatLong,
             radius: searchRad,
         });
-       
+        circles.push(arrCircle);
+        
         //console.log(depCircle.contains(arrLatLong));
         //in radius airports
         arrira = []
@@ -224,39 +238,57 @@ function searchCities(event)
         }
 
         //Retreive data for departure and arrival airports around the departing date in 2018
-        var thisDay = new Date(departDate);
-        thisDay.setFullYear(databaseYear);
-        thisDay.setHours(0,0,0,0);
+        var thisDepartDay = new Date(departDate);
+        var thisReturnDay = new Date(returnDate);
+        thisDepartDay.setFullYear(databaseYear);
+        thisDepartDay.setHours(0,0,0,0);
+        thisReturnDay.setFullYear(databaseYear);
+        thisReturnDay.setHours(0,0,0,0);
+
         depQueryDepartDatesCount = 0;
         arrQueryDepartDatesCount = 0;
+        depQueryReturnDatesCount = 0;
+        arrQueryReturnDatesCount = 0;
+
         for (d = 0; d <= 2 * flexDays; d++)
         { 
-            var dateString = myUtil.formatDate(thisDay);                       
+            var dateString = myUtil.formatDate(thisDepartDay);                       
             for(i = 0; i < depira.length; i++)
             {
                 thisICAO = depira[i]["icao"];
-                // depQuery = "SELECT COUNT(*) FROM opensky WHERE (estdepartureairport='" +  thisICAO + "' or estarrivalairport='" + thisICAO + "') " ;
-                // firstTimeUnix = myUtil.getUnixTimeFromDate(thisDay);
-                // lastTimeUnix = firstTimeUnix + (24 * 60 * 60);
-                // depQuery += "and (firstseen >= " + firstTimeUnix + " and lastseen <= " + lastTimeUnix + ")";
                 depQuery = "SELECT * FROM openskyByDates WHERE Date = '" + dateString + "' and estdepartureairport = '" + thisICAO + "'";
-                myUtil.sendSQLQuery(depQuery, depQueryDepartDatesCallback, new Date(thisDay), depira[i]);
+                myUtil.sendSQLQuery(depQuery, depQueryDepartDatesCallback, new Date(thisDepartDay), depira[i]);
                 console.log(depQuery);
                 depQueryDepartDatesCount++;
             }
             for(i = 0; i < arrira.length; i++)
             {
                 thisICAO = arrira[i]["icao"];
-                // depQuery = "SELECT COUNT(*) FROM opensky WHERE (estdepartureairport='" +  thisICAO + "' or estarrivalairport='" + thisICAO + "') " ;
-                // firstTimeUnix = myUtil.getUnixTimeFromDate(thisDay);
-                // lastTimeUnix = firstTimeUnix + (24 * 60 * 60);
-                // depQuery += "and (firstseen >= " + firstTimeUnix + " and lastseen <= " + lastTimeUnix + ")";
                 depQuery = "SELECT * FROM openskyByDates WHERE Date = '" + dateString + "' and estdepartureairport = '" + thisICAO + "'";
-                myUtil.sendSQLQuery(depQuery, arrQueryDepartDatesCallback, new Date(thisDay), arrira[i]);
+                myUtil.sendSQLQuery(depQuery, arrQueryDepartDatesCallback, new Date(thisDepartDay), arrira[i]);
                 console.log(depQuery);
                 arrQueryDepartDatesCount++;
             }
-            thisDay.setDate(thisDay.getDate() + 1)
+            thisDepartDay.setDate(thisDepartDay.getDate() + 1)
+
+            dateString = myUtil.formatDate(thisReturnDay);                       
+            for(i = 0; i < depira.length; i++)
+            {
+                thisICAO = depira[i]["icao"];
+                retQuery = "SELECT * FROM openskyByDates WHERE Date = '" + dateString + "' and estdepartureairport = '" + thisICAO + "'";
+                myUtil.sendSQLQuery(retQuery, depQueryReturnDatesCallback, new Date(thisReturnDay), depira[i]);
+                console.log(retQuery);
+                depQueryReturnDatesCount++;
+            }
+            for(i = 0; i < arrira.length; i++)
+            {
+                thisICAO = arrira[i]["icao"];
+                retQuery = "SELECT * FROM openskyByDates WHERE Date = '" + dateString + "' and estdepartureairport = '" + thisICAO + "'";
+                myUtil.sendSQLQuery(retQuery, arrQueryReturnDatesCallback, new Date(thisReturnDay), arrira[i]);
+                console.log(retQuery);
+                arrQueryReturnDatesCount++;
+            }
+            thisReturnDay.setDate(thisReturnDay.getDate() + 1)
         }
 
         //TODO: wrap with an exception handler
@@ -299,6 +331,95 @@ function searchCities(event)
             checkCompletion();
         }
 
+        var departAirportReturnData = [];
+        function depQueryReturnDatesCallback(data, date, airport)
+        {
+            depQueryReturnDatesCount--;
+            var thisData;
+            thisMonth = date.getMonth() + 1;
+            formatedDate = (thisMonth < 10) ? "0" + thisMonth : "" + thisMonth;
+            thisDay = date.getDate();
+            formatedDate += "/";
+            formatedDate += (thisDay < 10) ? "0" + thisDay : "" + thisDay;
+
+            thisData = {
+                "date": formatedDate,
+                "airport": airport["icao"],
+                "airportName": airport["airportname"],
+                "count": data.length > 0 ? data[0]['count'] : 0
+            }
+            departAirportReturnData.push(thisData);                        
+            console.log(thisData);
+            checkCompletion();
+        }
+
+        var arrivalAirportReturnData = [];
+        function arrQueryReturnDatesCallback(data, date, airport)
+        {
+            arrQueryReturnDatesCount--;
+            
+            thisData = {
+                "date": date.getMonth() + "/" + date.getDate(),
+                "airport": airport["icao"],
+                "airportName": airport["airportname"],
+                "count": data.length > 0 ? data[0]['count'] : 0
+            }
+            arrivalAirportReturnData.push(thisData);
+            // arrivalAirportReturnData data;
+            console.log(thisData);
+            checkCompletion();
+        }
+
+        function createGraph(airportData, graphNo, ps, titlePrefix = "")
+        {
+            // console.log("search completed displaying bar chart: ", airportData);
+            var groupedData = myUtil.groupBy(airportData, "airport");
+    
+            d3.select('#Cities').selectAll('#select' + graphNo).selectAll('p').remove();
+            var select = d3.select('#Cities').select('#select' + graphNo)
+                            .append('p')
+                            .append('select')
+                            .attr('class','select')
+                            .on('change',function() 
+                            {
+                                //d3.select("#graph").remove();
+                                // d3.select('#Cities').selectAll('select1').remove();
+                                selectValue = d3.select('#Cities')
+                                                .select('#select' + graphNo)
+                                                .select('p')
+                                                .select('select')
+                                                .property('value');
+                                displayBarChart(groupedData[selectValue], ps, graphNo, titlePrefix)
+                            });
+            var maxFlights = 0;
+            var defaultAirport;
+            var airportICAOs = [];
+            console.log(groupedData);
+            for (i in groupedData)
+            {
+                groupedData[i].forEach(function(d){
+                    if (maxFlights <= d["count"])
+                    {
+                        defaultAirport = i;
+                        maxFlights = d["count"]
+                    }
+                });                       
+                airportICAOs.push(i);
+                //create a menu item
+            }
+            
+            console.log(defaultAirport);
+            var options = select
+            .selectAll('option')
+            .data(airportICAOs).enter()
+            .append('option')
+            .property("selected", function(d){
+                return d == defaultAirport;})
+            .text(function (d) { return d; });
+
+            displayBarChart(groupedData[defaultAirport], ps, graphNo, titlePrefix);
+
+        }
 
         function checkCompletion(timeout = false)
         {
@@ -310,51 +431,16 @@ function searchCities(event)
                 if (!timeout)
                 {
                     ps = "departAirportDepartDate";
-                    // console.log("search completed displaying bar chart: ", departAirportDepartData);
-                    var groupedData = myUtil.groupBy(departAirportDepartData, "airport");
+                    createGraph(departAirportDepartData, '1', ps, 'Leaving date departures: ');
                     
-                    d3.select('#Cities').selectAll('select1').remove();
-                    var select = d3.select('#Cities').append('select1')
-                                    .append('select')
-                                    .attr('class','select')
-                                    .on('change',onchange);
-                    var maxFlights = 0;
-                    var defaultAirport;
-                    var airportICAOs = [];
-                    console.log(groupedData);
-                    for (i in groupedData)
-                    {
-                        groupedData[i].forEach(function(d){
-                            if (maxFlights <= d["count"])
-                            {
-                                defaultAirport = i;
-                                maxFlights = d["count"]
-                            }
-                        });                       
-                        airportICAOs.push(i);
-                        //create a menu item
-                    }
-                    
-                    console.log(defaultAirport);
-                    var options = select
-                    .selectAll('option')
-                    .data(airportICAOs).enter()
-                    .append('option')
-                    .property("selected", function(d){
-                        return d == defaultAirport;})
-                    .text(function (d) { return d; });
-        
-                    displayBarChart(groupedData[defaultAirport], ps);
+                    ps = "arrivalAirportDepartDate";
+                    createGraph(arrivalAirportDepartData, '2', ps, 'Leaving date arrivals: ');
 
-                    function onchange() 
-                    {
-                        //d3.select("#graph1").remove();
-                        // d3.select('#Cities').selectAll('select1').remove();
-                        selectValue = d3.select('#Cities').select('select1')
-                                        .select('select')
-                                        .property('value');
-                        displayBarChart(groupedData[selectValue], ps)
-                    };
+                    ps = "arrivalAirportReturnDate";
+                    createGraph(arrivalAirportReturnData, '3', ps, 'Returning date departures: ');
+                    
+                    ps = "departAirportReturnDate";
+                    createGraph(departAirportReturnData, '4', ps, 'Returning date arrivals: ');
                 }
                 //TODO: if timed out may need to reset the REST connection
                 //reenable search on page
@@ -370,11 +456,11 @@ function searchCities(event)
 
 
 
-function displayBarChart(airportDateData, elementId)
+function displayBarChart(airportDateData, elementId, graphNo, titlePrefix)
 {
     console.log(airportDateData);
 
-    d3.select('#Cities').selectAll('graph1').selectAll('p').remove();
+    d3.select('#Cities').selectAll('#graph' + graphNo).selectAll('p').remove();
     
     var yMin = airportDateData[0]["count"];
     var yMax = yMin;
@@ -443,7 +529,7 @@ function displayBarChart(airportDateData, elementId)
     //              .domain(dates)
     //              .range([0, width]);
 
-    var svg = d3.select('#Cities').append('graph1')
+    var svg = d3.select('#Cities').select('#graph' + graphNo)
     .append("p").append(elementId).append("svg")
     .attr("width", width + 2 * margin.left)
     .attr("height", height + 2 * margin.top)
@@ -471,6 +557,14 @@ function displayBarChart(airportDateData, elementId)
         .attr("width", 15)
         .style("fill", "blue")
     });
+
+    var title = titlePrefix + airportDateData[0]["airportName"];
+    svg.append("text")
+    .attr("x", (width / 2))             
+    .attr("y", -20)
+    .attr("text-anchor", "middle")  
+    .style("font-size", "20px") 
+    .text(title);
 
 }
 
@@ -537,7 +631,7 @@ function testDisplayBarChart()
     ]
 
     console.log(testData);
-    displayBarChart(testData, "test")
+    displayBarChart(testData, "test", "1")
 
 }
 
