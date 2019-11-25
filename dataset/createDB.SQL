@@ -6,6 +6,8 @@ DROP TABLE IF EXISTS airports;
 DROP TABLE IF EXISTS airlines;
 DROP TABLE IF EXISTS cities;
 DROP TABLE IF EXISTS n_opensky;
+DROP TABLE IF EXISTS opensky_with_model;
+DROP TABLE IF EXISTS opensky_with_model_reduced;
 
 
 -- Create tables
@@ -22,6 +24,11 @@ create table airlines(count integer, name text, ign text, iata text, icao text,
 
 --create table cities(city text, city_ascii text,	lat	real, lng real, country text, iso2 text, iso3 text,	admin_name text, capital text, population integer, id integer);
 
+create table opensky_with_model(icao24 text, firstseen integer, estdepartureairport text, lastseen integer,estarrivalairport text,callsign text,
+	estdepartureairporthorizdistance integer, estdepartureairportvertdistance integer,	estarrivalairporthorizdistance integer,
+    estarrivalairportvertdistance integer, departureairportcandidatescount integer, arrivalairportcandidatescount integer, day integer,
+    model text, manufacturer_name text, type_act text);
+
 --.tables
 
 
@@ -30,6 +37,7 @@ create table airlines(count integer, name text, ign text, iata text, icao text,
 .import ./airports.csv airports
 .import ./airlines.csv airlines
 --.import ./worldcities.csv cities
+.import ./opensky_with_model.csv opensky_with_model
 
 --SELECT COUNT(*) FROM opensky;
 --SELECT COUNT(*) FROM airports;
@@ -63,6 +71,18 @@ CREATE TABLE n_opensky AS SELECT * FROM opensky WHERE callsign LIKE 'N%';
 --SELECT COUNT(*) FROM n_opensky WHERE estdepartureairport==estarrivalairport;
 DELETE FROM n_opensky WHERE estdepartureairport==estarrivalairport;
 --SELECT COUNT(*) FROM n_opensky;
-SELECT * FROM n_opensky;
+--SELECT * FROM n_opensky;
 
+
+--SELECT COUNT(*) FROM opensky_with_model;
+DELETE FROM opensky_with_model WHERE type_act == 'Blim/Dirigible'
+                                  OR type_act == 'Glider'
+                                  OR type_act == 'Gyroplane'
+                                  OR type_act == 'Rotorcraft'
+                                  OR type_act == 'Weight-shift-control'
+                                  OR type_act == '';
+
+--SELECT COUNT(*) FROM opensky_with_model;
+CREATE TABLE opensky_with_model_reduced AS SELECT * FROM opensky_with_model;
+SELECT * FROM opensky_with_model_reduced;
 
