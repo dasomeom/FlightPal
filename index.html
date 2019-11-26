@@ -62,8 +62,8 @@
             input {
             padding: 10px;
             /* width: 50%; */
-            font-size: 17px;
-            font-family: Raleway;
+            font-size: 14px;
+            /* font-family: 'Times New Roman', Times, serif; */
             border: 1px solid #aaaaaa;
             }
 
@@ -73,7 +73,7 @@
             padding: 10px;
             width: 70%;
             height: 40%; 
-            min-width: 900px;
+            min-width: 1000px;
             }
 
             .autocomplete-items {
@@ -116,13 +116,23 @@
             padding: 10px;
             font-size: 16px;
             } */
-            input[type=text] {
-            background-color: #f1f1f1;
+            input[type=text], input[type=date] {
+            width: 25%;
+            padding: 5px 5px;
+            margin: 8px 8px;
+            box-sizing: border-box;
+            background-color: white;
             /* width: 50%; */
             }
+
+            select{
+                margin: 8px 8px;
+            }
             input[type=submit] {
-            background-color: DodgerBlue;
-            color: #fff;
+                background-color: DodgerBlue;
+                color: #fff;
+                width: 25%;
+                margin: 8px 8px;
             }
 
             .loader {
@@ -159,32 +169,51 @@
         <div id="Cities" class="tabcontent">
             <form id="entryForm" action="" autocomplete="off">
                 <div id="citiesmap"></div>
-                <h3>Flight Data by City </h3>
+                <!-- <h4>Flight Data by City </h4> -->
                 <!-- <p> -->
                     <div class="autocomplete">
+                        <label for="depCityName">Departure City: <br /></label>
                         <input type="text" id="depCityName" placeholder="Departure City">
                         <span id="depCityError"></span>
                     </div>
                     <div class="autocomplete">
+                        <label for="arrCityName">Arrival City: <br /></label>
                         <input type="text" id="arrCityName" placeholder="Arrival City">
                         <span id="arrCityError"></span>
                     </div>
                     <div>
-                    <input type="text" id="departDate" placeholder="Depart" onfocus="(this.type='date')"> 
-                    <span id="departDateError"></span>
+                        <label for="departDate">Departing Date: <br /></label>
+                        <input type="date" id="departDate" placeholder="Depart"> 
+                        <span id="departDateError"></span>
                     </div>
                     <div>
-                    <input type="text" id="returnDate" placeholder="Return" onfocus="(this.type='date')">
-                    <span id="returnDateError"></span>
+                        <label for="returnDate">Returning Date: <br /></label>
+                        <input type="date" id="returnDate" placeholder="Return">
+                        <span id="returnDateError"></span>
                     </div>
-                    <select id="searchRadius">
-                            <option value="20">20 mile rad</option>
-                            <option value="30">30 mile rad</option>
-                            <option value="40">40 mile rad</option>
-                            <option value="50">50 mile rad</option>
-                    </select>
+                    
                     <div>
-                        <button id = "searchButton" onclick="searchCities(event)">Search</button>
+                    <label for="searchRadius">Search Radius (miles): </label>
+                        <select id="searchRadius">
+                                <option value="20">20</option>
+                                <option value="30">30</option>
+                                <option value="40">40</option>
+                                <option value="50">50</option>
+                        </select>
+                    </div>
+
+                    <div>
+                    <label for="flexDays">Flexible Dates: </label>
+                        <select id="flexDays">
+                            <option value="2">2</option>
+                            <option value="5">5</option>
+                            <option value="7">7</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <input type="submit" id="searchButton" onclick="searchCities(event)", value = "Search">
+                        <!-- <button id = "searchButton" onclick="searchCities(event)">Search</button> -->
                     </div>
                     
                     <div class="loader"></div>     
