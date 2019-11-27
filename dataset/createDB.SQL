@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS airports;
 DROP TABLE IF EXISTS airlines;
 DROP TABLE IF EXISTS cities;
 DROP TABLE IF EXISTS openskyByDates;
+DROP TABLE IF EXISTS openskyByHours;
 DROP TABLE IF EXISTS n_opensky;
 DROP TABLE IF EXISTS opensky_with_model;
 DROP TABLE IF EXISTS opensky_with_model_reduced;
@@ -25,7 +26,7 @@ create table airlines(count integer, name text, ign text, iata text, icao text,
 
 create table cities(city text, city_ascii text,	lat	real, lng real, country text, iso2 text, iso3 text,	admin_name text, capital text, population integer, id integer);
 
-create table openskyByDates(Date text, estdepartureairport text, count integer);
+create table openskyByDates(Hour text, Date text, estdepartureairport text, count integer);
 
 create table opensky_with_model(icao24 text, firstseen integer, estdepartureairport text, lastseen integer,estarrivalairport text,callsign text,
 	estdepartureairporthorizdistance integer, estdepartureairportvertdistance integer,	estarrivalairporthorizdistance integer,
@@ -85,14 +86,21 @@ CREATE TABLE opensky_with_model_reduced AS SELECT * FROM opensky_with_model;
 -- SELECT * FROM opensky_with_model_reduced;
 
 INSERT INTO openskyByDates
-SELECT date(firstseen,'unixepoch') as Date, estdepartureairport, count(estdepartureairport) as count 
+SELECT strftime('%H', firstseen,'unixepoch') as Hour, date(firstseen,'unixepoch') as Date, estdepartureairport, count(estdepartureairport) as count 
 FROM opensky
-GROUP BY estdepartureairport, Date;
+GROUP BY estdepartureairport, Date, Hour;
 
-SELECT COUNT(*) FROM opensky;
-SELECT COUNT(*) FROM airports;
-SELECT COUNT(*) FROM airlines;
-SELECT COUNT(*) FROM cities;
-SELECT COUNT(*) FROM openskyByDates;
-SELECT COUNT(*) FROM n_opensky;
-SELECT COUNT(*) FROM opensky_with_model_reduced;
+-- INSERT INTO openskyByHours
+-- SELECT (date(firstseen,'unixepoch')||'_'||strftime('%H', firstseen,'unixepoch')) as dateHour, estdepartureairport, count(estdepartureairport) as count 
+-- FROM opensky
+-- GROUP BY estdepartureairport, dateHour;
+
+
+SELECT COUNT(*) AS openskyCount FROM opensky;
+SELECT COUNT(*) AS airportsCount FROM airports;
+SELECT COUNT(*) AS airlinesCount FROM airlines;
+SELECT COUNT(*) AS citiesCount FROM cities;
+SELECT COUNT(*) AS datesCount FROM openskyByDates;
+-- SELECT COUNT(*) AS n_openskyCount FROM n_opensky;
+SELECT COUNT(*) AS reducedCount FROM  opensky_with_model_reduced;
+

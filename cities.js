@@ -9,7 +9,7 @@ var departDate;
 var returnDate;
 var searchRad;
 var margin = {top: 50, right: 50, bottom: 50, left: 80}
-, width = 850 - margin.left - margin.right  
+, width = 650 - margin.left - margin.right  
 , height = 400 - margin.top - margin.bottom;
 var markers = [];
 var circles = [];
@@ -270,13 +270,31 @@ function searchCities(event)
         {
             depQueryDepartDatesCount--;
 
-            thisData = {
-                "date": myUtil.formatDate(date,'/'),
-                "airport": airport["icao"],
-                "airportName": airport["airportname"],
-                "count": data.length > 0 ? data[0]['count'] : 0
+            if (data.length > 0)
+            {
+                data.forEach(function(d){
+                    thisData = {
+                        "hour": d["Hour"],
+                        "date": myUtil.formatDate(date,'/'),
+                        "airport": airport["icao"],
+                        "airportName": airport["airportname"],
+                        "count": d["count"]
+                    }
+                    departAirportDepartData.push(thisData);  
+                });
             }
-            departAirportDepartData.push(thisData);                        
+            else
+            {
+                thisData = {
+                    "hour": 0,
+                    "date": myUtil.formatDate(date,'/'),
+                    "airport": airport["icao"],
+                    "airportName": airport["airportname"],
+                    "count": 0
+                }
+                departAirportDepartData.push(thisData);  
+            }
+                                  
             //console.log(thisData);
             checkCompletion();
         }
@@ -286,15 +304,30 @@ function searchCities(event)
         {
             arrQueryDepartDatesCount--;
             
-            thisData = {
-                "date": myUtil.formatDate(date,'/'),
-                "airport": airport["icao"],
-                "airportName": airport["airportname"],
-                "count": data.length > 0 ? data[0]['count'] : 0
+            if (data.length > 0)
+            {
+                data.forEach(function(d){
+                    thisData = {
+                        "hour": d["Hour"],
+                        "date": myUtil.formatDate(date,'/'),
+                        "airport": airport["icao"],
+                        "airportName": airport["airportname"],
+                        "count": d["count"]
+                    }
+                    arrivalAirportDepartData.push(thisData);  
+                });
             }
-            arrivalAirportDepartData.push(thisData);
-            // arrivalAirportDepartData data;
-            //console.log(thisData);
+            else
+            {
+                thisData = {
+                    "hour": 0,
+                    "date": myUtil.formatDate(date,'/'),
+                    "airport": airport["icao"],
+                    "airportName": airport["airportname"],
+                    "count": 0
+                }
+                arrivalAirportDepartData.push(thisData);  
+            }
             checkCompletion();
         }
 
@@ -303,13 +336,30 @@ function searchCities(event)
         {
             depQueryReturnDatesCount--;
 
-            thisData = {
-                "date": myUtil.formatDate(date,'/'),
-                "airport": airport["icao"],
-                "airportName": airport["airportname"],
-                "count": data.length > 0 ? data[0]['count'] : 0
+            if (data.length > 0)
+            {
+                data.forEach(function(d){
+                    thisData = {
+                        "hour": d["Hour"],
+                        "date": myUtil.formatDate(date,'/'),
+                        "airport": airport["icao"],
+                        "airportName": airport["airportname"],
+                        "count": d["count"]
+                    }
+                    departAirportReturnData.push(thisData);  
+                });
             }
-            departAirportReturnData.push(thisData);                        
+            else
+            {
+                thisData = {
+                    "hour": 0,
+                    "date": myUtil.formatDate(date,'/'),
+                    "airport": airport["icao"],
+                    "airportName": airport["airportname"],
+                    "count": 0
+                }
+                departAirportReturnData.push(thisData);  
+            }
             //console.log(thisData);
             checkCompletion();
         }
@@ -319,23 +369,40 @@ function searchCities(event)
         {
             arrQueryReturnDatesCount--;
 
-            thisData = {
-                "date": myUtil.formatDate(date,'/'),
-                "airport": airport["icao"],
-                "airportName": airport["airportname"],
-                "count": data.length > 0 ? data[0]['count'] : 0
+            if (data.length > 0)
+            {
+                data.forEach(function(d){
+                    thisData = {
+                        "hour": d["Hour"],
+                        "date": myUtil.formatDate(date,'/'),
+                        "airport": airport["icao"],
+                        "airportName": airport["airportname"],
+                        "count": d["count"]
+                    }
+                    arrivalAirportReturnData.push(thisData);  
+                });
             }
-            arrivalAirportReturnData.push(thisData);
-            // arrivalAirportReturnData data;
-            //console.log(thisData);
+            else
+            {
+                thisData = {
+                    "hour": 0,
+                    "date": myUtil.formatDate(date,'/'),
+                    "airport": airport["icao"],
+                    "airportName": airport["airportname"],
+                    "count": 0
+                }
+                arrivalAirportReturnData.push(thisData);  
+            }
             checkCompletion();
         }
 
         function createGraph(airportData, graphNo, ps, titlePrefix = "")
         {
             // //console.log("search completed displaying bar chart: ", airportData);
+            
             var groupedData = myUtil.groupBy(airportData, "airport");
-    
+            console.log(airportData,groupedData);
+
             d3.select('#Cities').selectAll('#select' + graphNo).selectAll('p').remove();
             var select = d3.select('#Cities').select('#select' + graphNo)
                             .append('p')
@@ -416,12 +483,33 @@ function searchCities(event)
 
 
 
-function displayBarChart(airportDateData, elementId, graphNo, titlePrefix)
+function displayBarChart(airportDateHourData, elementId, graphNo, titlePrefix)
 {
     //console.log(airportDateData);
 
     d3.select('#Cities').selectAll('#graph' + graphNo).selectAll('p').remove();
     
+    airportDateData = [];
+    var groupedData = myUtil.groupBy(airportDateHourData, "date");
+    
+    for (key in groupedData)
+    {
+        thisCount = 0;
+        groupedData[key].forEach(function(d){
+            thisCount += d["count"];
+        });
+
+        thisData = {
+            "date": groupedData[key][0]["date"],
+            "airport": groupedData[key][0]["airport"],
+            "airportName": groupedData[key][0]["airportName"],
+            "count": thisCount
+        }
+        airportDateData.push(thisData);
+    }
+
+    console.log(airportDateData, groupedData);
+
     var yMin = airportDateData[0]["count"];
     var yMax = yMin;
     sortedData = []
@@ -491,7 +579,7 @@ function displayBarChart(airportDateData, elementId, graphNo, titlePrefix)
              .domain([0, yMax])
              .range([height, 0]);
     
-    var rangeArray = Array.from(Array(dates.length).keys());
+    // var rangeArray = Array.from(Array(dates.length).keys());
     // var rectHeight = height/states.length;
     //console.log(dates, rangeArray);
 
@@ -521,7 +609,7 @@ function displayBarChart(airportDateData, elementId, graphNo, titlePrefix)
     .call(d3.axisLeft(yScale)); // Create an axis component with d3.axisLeft
 
     slotWidth = Math.floor((width - 2*margin.left)/(sortedData.length));
-    barWidth = 30;
+    barWidth = 20;
     x_adj = Math.floor(slotWidth/2);
     // //console.log(sortedData);
     sortedData.forEach(function(d){
@@ -536,6 +624,13 @@ function displayBarChart(airportDateData, elementId, graphNo, titlePrefix)
         .attr("height", height - yScale(d["count"]) )
         .attr("width", barWidth)
         .style("fill", "blue")
+        .on("mouseover", function() {
+            drawHourlyBarChart(groupedData[d["date"]], "hourlyChart", graphNo);
+            // console.log(d);
+        })                  
+        .on("mouseout", function() {
+            // console.log(d);
+        });
     });
 
     var title = titlePrefix + airportDateData[0]["airportName"];
@@ -548,6 +643,76 @@ function displayBarChart(airportDateData, elementId, graphNo, titlePrefix)
 
 }
 
+function drawHourlyBarChart(hourlyData, elementId, graphNo)
+{
+    d3.select('#Cities').selectAll('#graph' + graphNo).selectAll('p').selectAll(elementId).remove();
+    console.log(hourlyData);
+
+    var yMin = hourlyData[0]["count"];
+    var yMax = yMin;
+    
+    for (i = 0; i < hourlyData.length; i++)
+    {
+        thisCount = hourlyData[i]["count"];
+        yMin = Math.min(yMin, thisCount);
+        yMax = Math.max(yMax, thisCount);
+    }
+
+    yScale = d3.scaleLinear()
+             .domain([0, yMax])
+             .range([height, 0]);
+    
+    var hours = Array.from(Array(24).keys());
+ 
+    var xScale = d3.scaleBand()
+        .domain(hours) // input
+        //.range([0, 4])
+        //.padding([.1])
+        .rangeRound([0, width]); // output
+    // var xScale = d3.scaleOrdinal()
+    //              .domain(dates)
+    //              .range([0, width]);
+
+    var svg = d3.select('#Cities').select('#graph' + graphNo)
+    .select("p").append(elementId).append("svg")
+    .attr("width", width + 2 * margin.left)
+    .attr("height", height + 2 * margin.top)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+
+    svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(xScale)); // Create an axis component with d3.axisBottom
+
+    svg.append("g")
+    .attr("class", "y axis")
+    .call(d3.axisLeft(yScale)); // Create an axis component with d3.axisLeft
+
+    slotWidth = Math.floor((width - 2*margin.left)/(sortedData.length));
+    barWidth = 10;
+    x_adj = Math.floor(slotWidth/2);
+    // //console.log(hourlyData);
+    hourlyData.forEach(function(d){
+        //console.log(d["count"]);
+        svg.append("rect")
+        .attr("class", "tile")
+        .attr("y", function(){ return yScale(d["count"]);})
+        .attr("x", function(){ return xScale(Number(d["hour"])) + x_adj})
+        .attr("height", height - yScale(d["count"]) )
+        .attr("width", barWidth)
+        .style("fill", "blue")
+    });
+
+    var title = "(UTC) Hourly data at " + hourlyData[0]["airportName"] + " on: " + hourlyData[0]["date"];
+    svg.append("text")
+    .attr("x", (width / 2))             
+    .attr("y", -20)
+    .attr("text-anchor", "middle")  
+    .style("font-size", "20px") 
+    .text(title);
+
+}
 //test displayBarChart
 // testDisplayBarChart()
 
