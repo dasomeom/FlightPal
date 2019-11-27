@@ -206,8 +206,8 @@
                     <label for="flexDays">Flexible Dates: </label>
                         <select id="flexDays">
                             <option value="2">2</option>
-                            <option value="5">5</option>
-                            <option value="7">7</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
                         </select>
                     </div>
 
@@ -240,9 +240,26 @@
         <script type="text/javascript">
             var citiesMapHandler;
             var airportsMapHandler;
+            var depCityHandle = document.getElementById("depCityName");
+            var arrCityHandle = document.getElementById("arrCityName");
+            var depDateHandle = document.getElementById("departDate");
+            var retDateHandle = document.getElementById("returnDate");
+            depCityHandle.value = "New York, New York";
+            arrCityHandle.value = "Los Angeles, California";
 
-            loader = document.getElementsByClassName("loader");
-            loader[0].style.display = "block";
+            //Depart and Return date defaults TODO: Remove these
+            depDateHandle.focus();
+            retDateHandle.focus();
+            depDateHandle.value = "2020-01-02";
+            depDateHandle.text = "01/02/2020"
+            retDateHandle.value = "2020-01-20";
+            retDateHandle.text = "01/20/2020";
+            depDateHandle.blur();
+            retDateHandle.blur();
+
+            var loader = document.getElementsByClassName("loader");
+            
+            
 
             function initMap() 
             {
@@ -289,9 +306,11 @@
             myUtil = new util();
 
             myUtil.sendSQLQuery("SELECT * FROM cities", citiesCallback)
-            var cities = []
-            var cityNames = []
-            var stateNames = []
+            var cities = [];
+            var airports = []
+            var cityNames = [];
+            var stateNames = [];
+            setCitySearchState(false);
 
             function citiesCallback(data)
             {
@@ -304,9 +323,10 @@
                     stateNames.push(cities[i]["admin_name"]);
                 }
                 console.log(cityNames);
+                checkSearchReady();
+               
             }
 
-            var airports = []
             myUtil.sendSQLQuery("SELECT * FROM airports", airportsCallback);
 
             function airportsCallback(data)
@@ -315,7 +335,30 @@
                 //TODO: remove only a demo
                 demoAirportsMap();
                 console.log(airports);
+                checkSearchReady();
             }
+
+            function checkSearchReady()
+            {
+                if (cities.length > 0 && airports.length > 0)
+                {
+                    setCitySearchState(true);
+                }
+
+            }
+
+            function setCitySearchState(enabled)
+            {
+                depCityHandle.disabled = !enabled;
+                arrCityHandle.disabled = !enabled;
+                depDateHandle.disabled = !enabled;
+                retDateHandle.disabled = !enabled;
+                document.getElementById("searchButton").disabled = !enabled;
+                document.getElementById("searchRadius").disabled = !enabled;
+                document.getElementById("flexDays").disabled = !enabled;
+                loader[0].style.display = enabled ? "none":"block";
+            }
+
             // Get the element with id="defaultOpen" and click on it
             document.getElementById("defaultOpen").click();
 

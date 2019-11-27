@@ -1,27 +1,7 @@
-depCityHandle = document.getElementById("depCityName");
-arrCityHandle = document.getElementById("arrCityName");
-depDateHandle = document.getElementById("departDate");
-retDateHandle = document.getElementById("returnDate");
-
-loader = document.getElementsByClassName("loader");
-loader[0].style.display = "none";
-
 
 //enable autocomplete on the departure city and arrival city entry boxes
 myUtil.autocomplete(document.getElementById("depCityName"), cityNames, stateNames);
 myUtil.autocomplete(document.getElementById("arrCityName"), cityNames, stateNames);
-depCityHandle.value = "New York, New York";
-arrCityHandle.value = "Los Angeles, California";
-
-//Depart and Return date defaults TODO: Remove these
-depDateHandle.focus();
-retDateHandle.focus();
-depDateHandle.value = "2020-01-02";
-depDateHandle.text = "01/02/2020"
-retDateHandle.value = "2020-01-20";
-retDateHandle.text = "01/20/2020";
-depDateHandle.blur();
-retDateHandle.blur();
 
 var departCity;
 var arrivalCity;
@@ -132,23 +112,12 @@ function searchCities(event)
 
     //console.log(returnDate, returnDateValid, d, m, y)
 
-    function setSearchState(enabled)
-    {
-        depCityHandle.disabled = !enabled;
-        arrCityHandle.disabled = !enabled;
-        depDateHandle.disabled = !enabled;
-        retDateHandle.disabled = !enabled;
-        document.getElementById("searchButton").disabled = !enabled;
-        document.getElementById("searchRadius").disabled = !enabled;
-        document.getElementById("flexDays").disabled = !enabled;
-    }
+
 
     if(departCityValid && arrivalCityValid && departDateValid && returnDateValid)
     {
-        setSearchState(false);
+        setCitySearchState(false);
         //Grey out entry boxes and search button
-        //show loader
-        loader[0].style.display = "block";
 
          //Load departure and arrival cities on maps
         var bounds  = new google.maps.LatLngBounds();
@@ -419,7 +388,6 @@ function searchCities(event)
             if((depQueryDepartDatesCount == 0 && arrQueryDepartDatesCount == 0) || timeout)
             {
                 //console.log(timeout, depQueryDepartDatesCount, arrQueryDepartDatesCount);
-                loader[0].style.display = "none";
                 if (!timeout)
                 {
                     ps = "departAirportDepartDate";
@@ -436,7 +404,7 @@ function searchCities(event)
                 }
                 //TODO: if timed out may need to reset the REST connection
                 //reenable search on page
-                setSearchState(true);
+                setCitySearchState(true);
             }
         }
 
