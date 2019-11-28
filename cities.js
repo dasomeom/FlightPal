@@ -17,6 +17,11 @@ var circles = [];
 function searchCities(event)
 {
     event.preventDefault();
+    const sleep = (milliseconds) => 
+    {
+        return new Promise(resolve => setTimeout(resolve, milliseconds))
+    }
+
     // clear all markers
     markers.forEach(function(d){
         d.setMap(null);
@@ -214,172 +219,70 @@ function searchCities(event)
         thisReturnDay.setDate(thisReturnDay.getDate() - flexDays);
         thisReturnDay.setHours(0,0,0,0);
 
-        depQueryDepartDatesCount = 0;
-        arrQueryDepartDatesCount = 0;
-        depQueryReturnDatesCount = 0;
-        arrQueryReturnDatesCount = 0;
-
-        for (d = 0 ; d <= 2*flexDays; d++)
-        { 
-            departQueryDate = new Date(thisDepartDay);
-            departQueryDate.setFullYear(databaseYear);
-            var dateString = myUtil.formatDate(departQueryDate);                       
-            for(i = 0; i < depira.length; i++)
-            {
-                thisICAO = depira[i]["icao"];
-                depQuery = "SELECT * FROM openskyByDates WHERE Date = '" + dateString + "' and estdepartureairport = '" + thisICAO + "'";
-                myUtil.sendSQLQuery(depQuery, depQueryDepartDatesCallback, new Date(thisDepartDay), depira[i]);
-                //console.log(depQuery);
-                depQueryDepartDatesCount++;
-            }
-            for(i = 0; i < arrira.length; i++)
-            {
-                thisICAO = arrira[i]["icao"];
-                depQuery = "SELECT * FROM openskyByDates WHERE Date = '" + dateString + "' and estdepartureairport = '" + thisICAO + "'";
-                myUtil.sendSQLQuery(depQuery, arrQueryDepartDatesCallback, new Date(thisDepartDay), arrira[i]);
-                //console.log(depQuery);
-                arrQueryDepartDatesCount++;
-            }
-            thisDepartDay.setDate(thisDepartDay.getDate() + 1);
-
-            returnQueryDate = new Date(thisReturnDay);
-            returnQueryDate.setFullYear(databaseYear);
-            dateString = myUtil.formatDate(returnQueryDate);                       
-            for(i = 0; i < depira.length; i++)
-            {
-                thisICAO = depira[i]["icao"];
-                retQuery = "SELECT * FROM openskyByDates WHERE Date = '" + dateString + "' and estdepartureairport = '" + thisICAO + "'";
-                myUtil.sendSQLQuery(retQuery, depQueryReturnDatesCallback, new Date(thisReturnDay), depira[i]);
-                //console.log(retQuery);
-                depQueryReturnDatesCount++;
-            }
-            for(i = 0; i < arrira.length; i++)
-            {
-                thisICAO = arrira[i]["icao"];
-                retQuery = "SELECT * FROM openskyByDates WHERE Date = '" + dateString + "' and estdepartureairport = '" + thisICAO + "'";
-                myUtil.sendSQLQuery(retQuery, arrQueryReturnDatesCallback, new Date(thisReturnDay), arrira[i]);
-                //console.log(retQuery);
-                arrQueryReturnDatesCount++;
-            }
-            thisReturnDay.setDate(thisReturnDay.getDate() + 1);
-        }
-
-        //TODO: wrap with an exception handler
         var departAirportDepartData = [];
-        function depQueryDepartDatesCallback(data, date, airport)
-        {
-            depQueryDepartDatesCount--;
-
-            if (data.length > 0)
-            {
-                data.forEach(function(d){
-                    thisData = {
-                        "hour": d["Hour"],
-                        "date": myUtil.formatDate(date,'/'),
-                        "airport": airport["icao"],
-                        "airportName": airport["airportname"],
-                        "count": d["count"]
-                    }
-                    departAirportDepartData.push(thisData);  
-                });
-            }
-            else
-            {
-                thisData = {
-                    "hour": 0,
-                    "date": myUtil.formatDate(date,'/'),
-                    "airport": airport["icao"],
-                    "airportName": airport["airportname"],
-                    "count": 0
-                }
-                departAirportDepartData.push(thisData);  
-            }
-                                  
-            //console.log(thisData);
-            checkCompletion();
-        }
-
         var arrivalAirportDepartData = [];
-        function arrQueryDepartDatesCallback(data, date, airport)
-        {
-            arrQueryDepartDatesCount--;
-            
-            if (data.length > 0)
-            {
-                data.forEach(function(d){
-                    thisData = {
-                        "hour": d["Hour"],
-                        "date": myUtil.formatDate(date,'/'),
-                        "airport": airport["icao"],
-                        "airportName": airport["airportname"],
-                        "count": d["count"]
-                    }
-                    arrivalAirportDepartData.push(thisData);  
-                });
-            }
-            else
-            {
-                thisData = {
-                    "hour": 0,
-                    "date": myUtil.formatDate(date,'/'),
-                    "airport": airport["icao"],
-                    "airportName": airport["airportname"],
-                    "count": 0
-                }
-                arrivalAirportDepartData.push(thisData);  
-            }
-            checkCompletion();
-        }
-
         var departAirportReturnData = [];
-        function depQueryReturnDatesCallback(data, date, airport)
-        {
-            depQueryReturnDatesCount--;
-
-            if (data.length > 0)
-            {
-                data.forEach(function(d){
-                    thisData = {
-                        "hour": d["Hour"],
-                        "date": myUtil.formatDate(date,'/'),
-                        "airport": airport["icao"],
-                        "airportName": airport["airportname"],
-                        "count": d["count"]
-                    }
-                    departAirportReturnData.push(thisData);  
-                });
-            }
-            else
-            {
-                thisData = {
-                    "hour": 0,
-                    "date": myUtil.formatDate(date,'/'),
-                    "airport": airport["icao"],
-                    "airportName": airport["airportname"],
-                    "count": 0
-                }
-                departAirportReturnData.push(thisData);  
-            }
-            //console.log(thisData);
-            checkCompletion();
-        }
-
         var arrivalAirportReturnData = [];
-        function arrQueryReturnDatesCallback(data, date, airport)
-        {
-            arrQueryReturnDatesCount--;
 
-            if (data.length > 0)
+        const performQuery = async() => {
+            await sleep(100);
+            for (d = 0 ; d <= 2*flexDays; d++)
+            { 
+                departQueryDate = new Date(thisDepartDay);
+                departQueryDate.setFullYear(databaseYear);
+                var dateString = myUtil.formatDate(departQueryDate);                       
+                for(i = 0; i < depira.length; i++)
+                {
+                    thisICAO = depira[i]["icao"];
+                    thisData = searchHourlyData(dateString, thisICAO);
+                    addToAirportData(departAirportDepartData, thisData, new Date(thisDepartDay), depira[i]);
+                }
+                for(i = 0; i < arrira.length; i++)
+                {
+                    thisICAO = arrira[i]["icao"];
+                    thisData = searchHourlyData(dateString, thisICAO);
+                    addToAirportData(arrivalAirportDepartData, thisData, new Date(thisDepartDay), arrira[i]);
+                }
+                thisDepartDay.setDate(thisDepartDay.getDate() + 1);
+                
+
+                returnQueryDate = new Date(thisReturnDay);
+                returnQueryDate.setFullYear(databaseYear);
+                dateString = myUtil.formatDate(returnQueryDate);                       
+                for(i = 0; i < depira.length; i++)
+                {
+                    thisICAO = depira[i]["icao"];
+                    thisData = searchHourlyData(dateString, thisICAO);
+                    addToAirportData(departAirportReturnData, thisData, new Date(thisReturnDay), depira[i])
+                }
+                for(i = 0; i < arrira.length; i++)
+                {
+                    thisICAO = arrira[i]["icao"];
+                    thisData = searchHourlyData(dateString, thisICAO);
+                    addToAirportData(arrivalAirportReturnData, thisData, new Date(thisReturnDay), arrira[i])
+                    
+                }
+                thisReturnDay.setDate(thisReturnDay.getDate() + 1);
+            }
+
+            checkCompletion();
+        }
+
+        performQuery();
+
+        function addToAirportData(airportData, queryData, date, airport)
+        {
+            if (queryData.length > 0)
             {
-                data.forEach(function(d){
+                queryData.forEach(function(d){
                     thisData = {
                         "hour": d["Hour"],
                         "date": myUtil.formatDate(date,'/'),
                         "airport": airport["icao"],
                         "airportName": airport["airportname"],
-                        "count": d["count"]
+                        "count": Number(d["count"])
                     }
-                    arrivalAirportReturnData.push(thisData);  
+                    airportData.push(thisData);  
                 });
             }
             else
@@ -391,10 +294,11 @@ function searchCities(event)
                     "airportName": airport["airportname"],
                     "count": 0
                 }
-                arrivalAirportReturnData.push(thisData);  
+                airportData.push(thisData);  
             }
-            checkCompletion();
+
         }
+
 
         function createGraph(airportData, graphNo, ps, titlePrefix = "")
         {
@@ -452,7 +356,7 @@ function searchCities(event)
         function checkCompletion(timeout = false)
         {
             //Check for completion and remove progress indicator and any lingering queries
-            if((depQueryDepartDatesCount == 0 && arrQueryDepartDatesCount == 0) || timeout)
+            // if((depQueryDepartDatesCount == 0 && arrQueryDepartDatesCount == 0) || timeout)
             {
                 //console.log(timeout, depQueryDepartDatesCount, arrQueryDepartDatesCount);
                 if (!timeout)
@@ -663,15 +567,13 @@ function drawHourlyBarChart(hourlyData, elementId, graphNo)
              .range([height, 0]);
     
     var hours = Array.from(Array(24).keys());
- 
+    console.log(hours);
+
     var xScale = d3.scaleBand()
         .domain(hours) // input
         //.range([0, 4])
         //.padding([.1])
         .rangeRound([0, width]); // output
-    // var xScale = d3.scaleOrdinal()
-    //              .domain(dates)
-    //              .range([0, width]);
 
     var svg = d3.select('#Cities').select('#graph' + graphNo)
     .select("p").append(elementId).append("svg")
@@ -689,7 +591,7 @@ function drawHourlyBarChart(hourlyData, elementId, graphNo)
     .attr("class", "y axis")
     .call(d3.axisLeft(yScale)); // Create an axis component with d3.axisLeft
 
-    slotWidth = Math.floor((width - 2*margin.left)/(sortedData.length));
+    slotWidth = Math.floor((width - 2*margin.left)/(hours.length));
     barWidth = 10;
     x_adj = Math.floor(slotWidth/2);
     // //console.log(hourlyData);
@@ -704,7 +606,8 @@ function drawHourlyBarChart(hourlyData, elementId, graphNo)
         .style("fill", "blue")
     });
 
-    var title = "(UTC) Hourly data at " + hourlyData[0]["airportName"] + " on: " + hourlyData[0]["date"];
+    thisDate = (hourlyData[0]["date"]).split("/");
+    var title = "(UTC) Hourly data at " + hourlyData[0]["airportName"] + " on: " +  thisDate[1] + "/" + thisDate[2];
     svg.append("text")
     .attr("x", (width / 2))             
     .attr("y", -20)

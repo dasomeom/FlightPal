@@ -6,8 +6,8 @@
             #citiesmap, #airportsmap {
                 top:0;
                 float:right;
-                height: 300px; 
-                width: 600px;
+                height: 400px; 
+                width: 800px;
             }
             html, body {
                 height: 100%;
@@ -73,7 +73,7 @@
             padding: 10px;
             width: 70%;
             height: 40%; 
-            min-width: 1000px;
+            min-width: 1100px;
             }
 
             .autocomplete-items {
@@ -108,14 +108,7 @@
             .autocomplete {
             /*the container must be positioned relative:*/
             position: relative;
-            /* display: inline-block; */
             }
-            /* input {
-            border: 1px solid transparent;
-            background-color: #f1f1f1;
-            padding: 10px;
-            font-size: 16px;
-            } */
             input[type=text], input[type=date] {
             width: 25%;
             padding: 5px 5px;
@@ -198,7 +191,6 @@
                                 <option value="20">20</option>
                                 <option value="30">30</option>
                                 <option value="40">40</option>
-                                <option value="50">50</option>
                         </select>
                     </div>
 
@@ -350,40 +342,58 @@
             function setCitySearchState(enabled)
             {
                 depCityHandle.disabled = !enabled;
+                depCityHandle.style.backgroundColor = !enabled ? "LightGrey": "white";
                 arrCityHandle.disabled = !enabled;
+                arrCityHandle.style.backgroundColor = !enabled ? "LightGrey": "white";
                 depDateHandle.disabled = !enabled;
+                depDateHandle.style.backgroundColor = !enabled ? "LightGrey": "white";
                 retDateHandle.disabled = !enabled;
+                retDateHandle.style.backgroundColor = !enabled ? "LightGrey": "white";
                 document.getElementById("searchButton").disabled = !enabled;
+                document.getElementById("searchButton").style.backgroundColor = !enabled ? "LightGrey": "DodgerBlue";
                 document.getElementById("searchRadius").disabled = !enabled;
+                document.getElementById("searchRadius").style.backgroundColor = !enabled ? "LightGrey": "white";
                 document.getElementById("flexDays").disabled = !enabled;
-                loader[0].style.display = enabled ? "none":"block";
+                document.getElementById("flexDays").style.backgroundColor = !enabled ? "LightGrey": "white";
+
+                loader[0].style.display = !enabled ? 'block' : 'none';
+                if (!enabled)
+                {
+                    for (graphNo = 1; graphNo <= 4; graphNo++)
+                    {
+                        d3.select('#Cities').selectAll('#graph' + graphNo).selectAll('p').remove();
+                        d3.select('#Cities').selectAll('#select' + graphNo).selectAll('p').remove();
+                    }
+                    
+                }
             }
 
             // Get the element with id="defaultOpen" and click on it
             document.getElementById("defaultOpen").click();
 
-            //Testing db query
-            // sqlQuery = "SELECT * FROM opensky WHERE firstseen >= 1530475840 AND lastseen <= 1530486080";
-            // myUtil.sendSQLQuery(sqlQuery, sqlQueryCallback);
-            
-            // function sqlQueryCallback(data)
-            // {
-            //     console.log(data);
-            // }
+            var hourlyData;
+            d3.csv("dataset/hourly.csv").then(function(data)
+            {
+                hourlyData = data;
+                console.log(data[0]);
+                searchData = searchHourlyData("2018-01-01", "KIAD");
 
+                console.log(searchData);
+            });
 
-            // //Testing GET /states/all
-            // console.log(myUtil.getUnixTime(2019, 10, 11, 11, 44, 20));
-            // console.log(myUtil.getUnixTimeFromDate(new Date()));
-            // console.log(myUtil.getDateFromUnixTime(1480764600));
-            // myUtil.getCurrentState(currentStateCallback)
+            function searchHourlyData(date, departureAirport)
+            {
+                var retVal = [];
 
-            // var stateData = null;
-            // function currentStateCallback(data)
-            // {
-            //     console.log("currentStateCallback: ",  data);
-            //     stateData = data;
-            // } 
+                hourlyData.forEach(function(d){
+                    if (d["Date"] == date && d["estdepartureairport"] == departureAirport)
+                    {
+                        retVal.push(d);
+                    }
+                });
+
+                return retVal;
+            }
 
         </script>
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEvogwuKKRrOFphoADJLjYW4iPBCiTkk8&callback=initMap&libraries=geometry"

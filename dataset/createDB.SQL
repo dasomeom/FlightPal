@@ -42,15 +42,6 @@ create table opensky_with_model(icao24 text, firstseen integer, estdepartureairp
 .import ./worldcities.csv cities
 .import ./opensky_with_model.csv opensky_with_model
 
--- Count how many rows have null values in at least one of the 6 first columns
---SELECT COUNT(*) FROM opensky WHERE icao24==''
---                                OR firstseen==''
---                                OR estdepartureairport==''
---                                OR lastseen==''
---                                OR estarrivalairport==''
---                                OR callsign=='';
-
--- Create cleaned table from opensky.csv having non null values in first 6 columns
 DELETE FROM opensky WHERE icao24==''
                         OR firstseen==''
                         OR estdepartureairport==''
@@ -60,20 +51,6 @@ DELETE FROM opensky WHERE icao24==''
                         -- OR callsign NOT LIKE '%N'
                         OR estdepartureairport==estarrivalairport;
 
--- SELECT COUNT(*) FROM opensky;
-
--- Keep only the November registered aircraft
--- CREATE TABLE n_opensky AS SELECT * FROM opensky WHERE callsign LIKE 'N%';
-
---SELECT COUNT(*) FROM n_opensky;
-
--- Count and delete loop flights (having same dep and arr airport code)
---SELECT COUNT(*) FROM n_opensky WHERE estdepartureairport==estarrivalairport;
--- DELETE FROM n_opensky WHERE estdepartureairport==estarrivalairport;
---SELECT * FROM n_opensky;
-
-
---SELECT COUNT(*) FROM opensky_with_model;
 DELETE FROM opensky_with_model WHERE type_act == 'Blim/Dirigible'
                                   OR type_act == 'Glider'
                                   OR type_act == 'Gyroplane'
@@ -81,26 +58,23 @@ DELETE FROM opensky_with_model WHERE type_act == 'Blim/Dirigible'
                                   OR type_act == 'Weight-shift-control'
                                   OR type_act == '';
 
---SELECT COUNT(*) FROM opensky_with_model;
 CREATE TABLE opensky_with_model_reduced AS SELECT * FROM opensky_with_model;
--- SELECT * FROM opensky_with_model_reduced;
 
-INSERT INTO openskyByDates
+.output hourly.csv
 SELECT strftime('%H', firstseen,'unixepoch') as Hour, date(firstseen,'unixepoch') as Date, estdepartureairport, count(estdepartureairport) as count 
 FROM opensky
 GROUP BY estdepartureairport, Date, Hour;
 
--- INSERT INTO openskyByHours
--- SELECT (date(firstseen,'unixepoch')||'_'||strftime('%H', firstseen,'unixepoch')) as dateHour, estdepartureairport, count(estdepartureairport) as count 
--- FROM opensky
--- GROUP BY estdepartureairport, dateHour;
-
+.output
 
 SELECT COUNT(*) AS openskyCount FROM opensky;
 SELECT COUNT(*) AS airportsCount FROM airports;
 SELECT COUNT(*) AS airlinesCount FROM airlines;
 SELECT COUNT(*) AS citiesCount FROM cities;
 SELECT COUNT(*) AS datesCount FROM openskyByDates;
--- SELECT COUNT(*) AS n_openskyCount FROM n_opensky;
 SELECT COUNT(*) AS reducedCount FROM  opensky_with_model_reduced;
 
+--drop opensky table because we have gotton everything we need.
+DROP TABLE IF EXISTS opensky; 
+
+VACUUM;
