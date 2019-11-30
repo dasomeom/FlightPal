@@ -3,12 +3,21 @@
     <head>
         <meta charset="utf-8">
         <style>
-            #citiesmap, #airportsmap {
-                top:0;
-                float:right;
-                height: 400px; 
-                width: 800px;
+            #citiesmap{
+                top:10px;
+                margin: 20px;
+                float: left;
+                height: 380px; 
+                width: 900px;
             }
+            #heatmap{
+                top:10px;
+                margin: 20px;
+                float: left;
+                height: 800px; 
+                width: 1200px;
+            }
+
             html, body {
                 height: 100%;
                 margin: 0;
@@ -67,7 +76,7 @@
             border: 1px solid #aaaaaa;
             }
 
-            #entryForm {
+            #entryForm #entryFormHeatmap{
             background-color: #ffffff;
             margin: 10px;
             padding: 10px;
@@ -110,7 +119,7 @@
             position: relative;
             }
             input[type=text], input[type=date] {
-            width: 25%;
+            width: 20%;
             padding: 5px 5px;
             margin: 8px 8px;
             box-sizing: border-box;
@@ -120,15 +129,18 @@
 
             select{
                 margin: 8px 8px;
+                vertical-align: middle;
             }
-            input[type=submit] {
+            input[type=submit]{
                 background-color: DodgerBlue;
                 color: #fff;
-                width: 25%;
+                width: 20%;
+                padding: 5px 5px;
                 margin: 8px 8px;
+                box-sizing: border-box;
             }
 
-            .loader {
+            .loader, .heatmapLoader {
             border: 16px solid #f3f3f3; /* Light grey */
             border-top: 16px solid #3498db; /* Blue */
             border-radius: 50%;
@@ -155,60 +167,67 @@
 
         
         <div class="tab">
-            <button class="tablinks" onclick="openTab(event, 'Cities')" id="defaultOpen">Cities</button>
-            <button class="tablinks" onclick="openTab(event, 'Airports')">Airports</button>
-            </div>
+            <button class="tablinks" onclick="openTab(event, 'Cities')" id="defaultOpen">Flights</button>
+            <button class="tablinks" onclick="openTab(event, 'Heatmap')">Heat Map</button>
+        </div>
         <!-- Tab content -->
         <div id="Cities" class="tabcontent">
             <form id="entryForm" action="" autocomplete="off">
-                <div id="citiesmap"></div>
-                <!-- <h4>Flight Data by City </h4> -->
-                <!-- <p> -->
-                    <div class="autocomplete">
-                        <label for="depCityName">Departure City: <br /></label>
-                        <input type="text" id="depCityName" placeholder="Departure City">
-                        <span id="depCityError"></span>
-                    </div>
-                    <div class="autocomplete">
-                        <label for="arrCityName">Arrival City: <br /></label>
-                        <input type="text" id="arrCityName" placeholder="Arrival City">
-                        <span id="arrCityError"></span>
-                    </div>
-                    <div>
-                        <label for="departDate">Departing Date: <br /></label>
-                        <input type="date" id="departDate" placeholder="Depart"> 
-                        <span id="departDateError"></span>
-                    </div>
-                    <div>
-                        <label for="returnDate">Returning Date: <br /></label>
-                        <input type="date" id="returnDate" placeholder="Return">
-                        <span id="returnDateError"></span>
-                    </div>
-                    
-                    <div>
-                    <label for="searchRadius">Search Radius (miles): </label>
-                        <select id="searchRadius">
-                                <option value="20">20</option>
-                                <option value="30">30</option>
-                                <option value="40">40</option>
-                        </select>
-                    </div>
+                <div id="citiesmap"></div> <br>
+                <div class="autocomplete">
+                    <label for="depCityName">Departure City: <br /></label>
+                    <input type="text" id="depCityName" placeholder="Departure City">
+                    <span id="depCityError"></span>
+                </div>
+                <div class="autocomplete">
+                    <label for="arrCityName">Arrival City: <br /></label>
+                    <input type="text" id="arrCityName" placeholder="Arrival City">
+                    <span id="arrCityError"></span>
+                </div>
+                <div>
+                    <label for="departDate">Departing Date: <br /></label>
+                    <input type="date" id="departDate" placeholder="Depart"> 
+                    <span id="departDateError"></span>
+                </div>
+                <div>
+                    <label for="returnDate">Returning Date: <br /></label>
+                    <input type="date" id="returnDate" placeholder="Return">
+                    <span id="returnDateError"></span>
+                </div>
+                
+                <div>
+                <label for="searchRadius">Search Radius (miles): </label>
+                    <select id="searchRadius">
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                            <option value="40">40</option>
+                    </select>
+                </div>
 
-                    <div>
-                    <label for="flexDays">Flexible Dates: </label>
-                        <select id="flexDays">
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                        </select>
-                    </div>
+                <div>
+                <label for="flexDays">Flexible Dates: </label>
+                    <select id="flexDays">
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
+                </div>
 
-                    <div>
-                        <input type="submit" id="searchButton" onclick="searchCities(event)", value = "Search">
-                        <!-- <button id = "searchButton" onclick="searchCities(event)">Search</button> -->
-                    </div>
-                    
-                    <div class="loader"></div>     
+                <div>
+                    <input type="submit" id="searchButton" onclick="searchCities(event)", value = "Search">
+                </div>
+                
+                <div>
+                    <label for="mapStyle">Map Style: </label>
+                    <select id="mapStyle" onchange='mapStyleHandler();'>
+                        <option value="Aubergine">Aubergine</option>
+                        <option value="Standard">Standard</option>
+                        <option value="Dark">Dark</option>
+                        <option value="Retro">Retro</option>
+                        <option value="Silver">Silver</option>
+                    </select>
+                </div>   
+                <div class="loader"></div>  
             </form>
             <div id = "select1"></div>
             <div id = "graph1"></div>
@@ -222,23 +241,74 @@
         </div>
 
 
-        <div id="Airports" class="tabcontent">
-            <form id="entryForm" action="" autocomplete="off">
-                <div id="airportsmap"></div>
-            </form>
+        <div id="Heatmap" class="tabcontent">
+            <p>
+                <div id="heatmap"></div><br>
+                <div>
+                    <label for="heatmapDate">Heat Map Date: <br/></label>
+                    <input type="date" id="heatmapDate" onchange="heatmapDateHandler()" placeholder="Heatmap Date"> 
+                    <span id="Heatmap Date Error"></span>
+                </div>               
+
+                <div>
+                    <input type="submit" id="heatmapSubmitButton" onclick="searchHeatmap(event)", value = "Search">
+                </div>
+                <div>
+                    <label for="UTCHour">UTC HOUR: </label> <br>
+                    <select id="UTCHour" onmousedown="if(this.options.length>6){this.size=6;}" 
+                        onchange='this.size=0;hourChangeHandler();' onblur="this.size=0;"  name="select1">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
+                        <option value="21">21</option>
+                        <option value="22">22</option>
+                        <option value="23">23</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="heatmapStyle">Map Style: </label>
+                    <select id="heatmapStyle" onchange='heatmapStyleHandler();'>
+                        <option value="Dark">Dark</option>
+                        <option value="Aubergine">Aubergine</option>
+                        <option value="Standard">Standard</option>
+                        <option value="Retro">Retro</option>
+                        <option value="Silver">Silver</option>
+                    </select>
+                </div>   
+                <div class="heatmapLoader"></div>    
+    
+            </p>
         </div>
           
-        
+        <script src="googleMapStyles.js"></script>
         <script type="text/javascript">
+            var databaseYear = 2018;
             var citiesMapHandler;
-            var airportsMapHandler;
+            var heatMapHandler;
             var depCityHandle = document.getElementById("depCityName");
             var arrCityHandle = document.getElementById("arrCityName");
             var depDateHandle = document.getElementById("departDate");
             var retDateHandle = document.getElementById("returnDate");
             depCityHandle.value = "New York, New York";
             arrCityHandle.value = "Los Angeles, California";
-
             //Depart and Return date defaults TODO: Remove these
             depDateHandle.focus();
             retDateHandle.focus();
@@ -250,19 +320,26 @@
             retDateHandle.blur();
 
             var loader = document.getElementsByClassName("loader");
-            
-            
+
+            var heatmapDateHandle = document.getElementById("heatmapDate");
+            var heatmapLoader = document.getElementsByClassName("heatmapLoader");
+            heatmapDateHandle.focus();
+            heatmapDateHandle.value = "2020-01-02";
+            heatmapDateHandle.text = "01/02/2020";
+
 
             function initMap() 
             {
                 citiesMapHandler = new google.maps.Map(document.getElementById('citiesmap'), {
                     center: {lat: 40, lng: -95},
-                    zoom: 3.8
+                    zoom: 3.8,
+                    styles: aubergineStyle
                 });
 
-                airportsMapHandler =  new google.maps.Map(document.getElementById('airportsmap'), {
+                heatMapHandler =  new google.maps.Map(document.getElementById('heatmap'), {
                     center: {lat: 40, lng: -95},
-                    zoom: 3.8
+                    zoom: 3.8,
+                    styles: darkStyle
                 });
 
 
@@ -302,7 +379,11 @@
             var airports = []
             var cityNames = [];
             var stateNames = [];
+            var hourlyData = [];
+            var airportsDict = {};
+            
             setCitySearchState(false);
+            setHeatmapSearchState(false);
 
             function citiesCallback(data)
             {
@@ -319,24 +400,43 @@
                
             }
 
-            myUtil.sendSQLQuery("SELECT * FROM airports", airportsCallback);
+            myUtil.sendSQLQuery("SELECT * FROM airports", airportCallback);
 
-            function airportsCallback(data)
+            function airportCallback(data)
             {
                 airports = data.slice(1, data.length);
                 //TODO: remove only a demo
-                demoAirportsMap();
+                // demoHeatMap();
                 console.log(airports);
+                airportsDict = myUtil.groupBy(airports, "icao")
+
                 checkSearchReady();
             }
 
             function checkSearchReady()
             {
-                if (cities.length > 0 && airports.length > 0)
+                if (cities.length > 0 && airports.length > 0 && hourlyData.length > 0)
                 {
                     setCitySearchState(true);
+                    setHeatmapSearchState(true);
                 }
 
+            }
+            
+            function  setUTCHourSelectionState(enabled)
+            {
+                document.getElementById("UTCHour").disabled = !enabled;
+                document.getElementById("UTCHour").style.backgroundColor = !enabled ? "LightGrey": "white";
+            }
+            function setHeatmapSearchState(enabled)
+            {
+                heatmapDateHandle.disabled = !enabled;
+                heatmapDateHandle.style.backgroundColor = !enabled ? "LightGrey": "white";
+                document.getElementById("heatmapSubmitButton").disabled = !enabled;
+                document.getElementById("heatmapSubmitButton").style.backgroundColor = !enabled ? "LightGrey": "DodgerBlue";
+
+                heatmapLoader[0].style.display = !enabled ? 'block' : 'none';
+                setUTCHourSelectionState(enabled);                
             }
 
             function setCitySearchState(enabled)
@@ -371,22 +471,21 @@
             // Get the element with id="defaultOpen" and click on it
             document.getElementById("defaultOpen").click();
 
-            var hourlyData;
             d3.csv("dataset/hourly.csv").then(function(data)
             {
                 hourlyData = data;
                 console.log(data[0]);
-                searchData = searchHourlyData("2018-01-01", "KIAD");
-
-                console.log(searchData);
+                // searchData = searchHourlyData("2018-01-01", "KIAD");
+                // console.log(searchData);
             });
 
-            function searchHourlyData(date, departureAirport)
+            function searchHourlyData(date, departureAirport = undefined)
             {
                 var retVal = [];
 
                 hourlyData.forEach(function(d){
-                    if (d["Date"] == date && d["estdepartureairport"] == departureAirport)
+                    if (d["Date"] == date && 
+                        (departureAirport == undefined || d["estdepartureairport"] == departureAirport))
                     {
                         retVal.push(d);
                     }
@@ -396,7 +495,7 @@
             }
 
         </script>
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEvogwuKKRrOFphoADJLjYW4iPBCiTkk8&callback=initMap&libraries=geometry"
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEvogwuKKRrOFphoADJLjYW4iPBCiTkk8&callback=initMap&libraries=geometry,visualization"
         async defer></script>
         
         <script src="cities.js"></script>

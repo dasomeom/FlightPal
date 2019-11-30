@@ -202,7 +202,6 @@ function searchCities(event)
         //TODO: Show drop down airport selections for the departure and arrival airports
 
         var flexDays = document.getElementById("flexDays").value;
-        var databaseYear = 2018;
 
         //timeout if things are taking too long
         var myVar = setInterval(timeoutFunc, (1*60*60*1000));
@@ -225,7 +224,7 @@ function searchCities(event)
         var arrivalAirportReturnData = [];
 
         const performQuery = async() => {
-            await sleep(100);
+            await sleep(200);
             for (d = 0 ; d <= 2*flexDays; d++)
             { 
                 departQueryDate = new Date(thisDepartDay);
@@ -683,3 +682,10 @@ function testDisplayBarChart()
 
 }
 
+function mapStyleHandler()
+{
+    sel = document.getElementById("mapStyle").value;
+    citiesMapHandler.setOptions({
+        styles: selToStyle[sel]
+    });
+}
