@@ -62,7 +62,7 @@ CREATE TABLE opensky_with_model_reduced AS SELECT * FROM opensky_with_model;
 
 .output hourly.csv
 SELECT strftime('%H', firstseen,'unixepoch') as Hour, date(firstseen,'unixepoch') as Date, estdepartureairport, count(estdepartureairport) as count 
-FROM opensky_with_model_reduced
+FROM opensky
 GROUP BY estdepartureairport, Date, Hour;
 
 
