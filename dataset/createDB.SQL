@@ -62,8 +62,24 @@ CREATE TABLE opensky_with_model_reduced AS SELECT * FROM opensky_with_model;
 
 .output hourly.csv
 SELECT strftime('%H', firstseen,'unixepoch') as Hour, date(firstseen,'unixepoch') as Date, estdepartureairport, count(estdepartureairport) as count 
-FROM opensky
+FROM opensky_with_model_reduced
 GROUP BY estdepartureairport, Date, Hour;
+
+
+
+-- .mode csv;
+-- .import opensky_with_model.csv opensky
+-- DELETE FROM opensky WHERE type_act == 'Blim/Dirigible'
+-- OR type_act == 'Glider'
+-- OR type_act == 'Gyroplane'
+-- OR type_act == 'Rotorcraft'
+-- OR type_act == 'Weight-shift-control'
+-- OR type_act == '';
+
+.output network.csv
+SELECT estdepartureairport, estarrivalairport, strftime('%H', firstseen , 'unixepoch') as Hour, date(firstseen, 'unixepoch') as Date, count(estdepartureairport) as flight_count
+FROM opensky_with_model_reduced
+GROUP BY estdepartureairport, estarrivalairport;
 
 .output
 
@@ -74,7 +90,7 @@ SELECT COUNT(*) AS citiesCount FROM cities;
 SELECT COUNT(*) AS datesCount FROM openskyByDates;
 SELECT COUNT(*) AS reducedCount FROM  opensky_with_model_reduced;
 
---drop opensky table because we have gotton everything we need.
+--drop opensky table because have gotten everything we need.
 DROP TABLE IF EXISTS opensky; 
 
 VACUUM;
