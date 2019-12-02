@@ -30,7 +30,7 @@ var networkData = init();
 
 
 
-function filterGraph(){
+function filterGraph(networkData){
 var date1 = new Date(date1Handle.value);
 var date2 = new Date(date2Handle.value);
 var airportCode = depAirportHandle.value;
@@ -56,14 +56,14 @@ return filteredNetwork2;
 
 console.log("done filtering");
 }
-console.log("NetworkData");
+
 console.log(networkData);
-var FilteredNetwork = filterGraph();
+var FilteredNetwork = filterGraph(networkData);
 console.log(FilteredNetwork); // filter by date and departure airport
 
 
 
-
+/*
 var nodes = {}
 
 // Compute the distinct nodes from the links.
@@ -77,7 +77,7 @@ FilteredNetwork.forEach(function(link) {
 console.log("NODES");
 console.log(nodes);
 
-/*var width = 1200,
+var width = 1200,
     height = 700;
 
 var force = d3.forceSimulation()
@@ -159,14 +159,14 @@ function perc2color(perc) {
 	}
 	var h = r * 0x10000 + g * 0x100 + b * 0x1;
 	return '#' + ('000000' + h.toString(16)).slice(-6);
-};
+}
 
 
 function consolePrint(data){
   for (let d of Object.values(data)){
       console.log(d.name);
-  };
-};
+  }
+}
 
 
 function linkColor(d){
@@ -236,6 +236,6 @@ function dblclick(d){
 
 function singleclick(d){
   d.fixed = !d.fixed;
-};
+}
 
 */
