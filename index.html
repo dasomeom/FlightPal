@@ -1,20 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <style>
+<head>
+    <meta charset="utf-8">
+    <style>
+        path.link {
+  fill: none;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+
+circle {
+  fill: #ccc;
+  stroke: #fff;
+  stroke: black;
+  stroke-width: 1.5px;
+}
+
+text {
+  fill: #000;
+  font: 10px sans-serif;
+  pointer-events: none;
+}
             #citiesmap{
                 top:10px;
                 margin: 20px;
                 float: left;
-                height: 380px; 
+                height: 380px;
                 width: 900px;
             }
             #heatmap{
                 top:10px;
                 margin: 20px;
                 float: left;
-                height: 800px; 
+                height: 800px;
                 width: 1200px;
             }
 
@@ -81,7 +99,7 @@
             margin: 10px;
             padding: 10px;
             width: 70%;
-            height: 40%; 
+            height: 40%;
             min-width: 1100px;
             }
 
@@ -154,161 +172,195 @@
             100% { transform: rotate(360deg); }
             }
 
-            p {page-break-after: always;} 
+            p {page-break-after: always;}
         </style>
-        <meta name="viewport" content="initial-scale=1.0">
+    <meta name="viewport" content="initial-scale=1.0">
 
-    </head>
+</head>
 
-    <body>  
-        <script src="lib/utility.js"></script> 
-        <script src="lib/d3.v5.min.js"></script>
-       
+<body>
+<script src="lib/utility.js"></script>
+<script src="lib/d3.v5.min.js"></script>
+<script src="lib/d3-scale-chromatic.v1.min.js"></script>
 
-        
-        <div class="tab">
-            <button class="tablinks" onclick="openTab(event, 'Cities')" id="defaultOpen">Flights</button>
-            <button class="tablinks" onclick="openTab(event, 'Heatmap')">Heat Map</button>
+
+
+<div class="tab">
+    <button class="tablinks" onclick="openTab(event, 'Cities')" id="defaultOpen">Flights</button>
+    <button class="tablinks" onclick="openTab(event, 'Heatmap')">Heat Map</button>
+    <button class="tablinks" onclick="openTab(event, 'Network Visualization')">Network Visualization</button>
+</div>
+<!-- Tab content -->
+<div id="Cities" class="tabcontent">
+    <form id="entryForm" action="" autocomplete="off">
+        <div id="citiesmap"></div> <br>
+        <div class="autocomplete">
+            <label for="depCityName">Departure City: <br /></label>
+            <input type="text" id="depCityName" placeholder="Departure City">
+            <span id="depCityError"></span>
         </div>
-        <!-- Tab content -->
-        <div id="Cities" class="tabcontent">
-            <form id="entryForm" action="" autocomplete="off">
-                <div id="citiesmap"></div> <br>
-                <div class="autocomplete">
-                    <label for="depCityName">Departure City: <br /></label>
-                    <input type="text" id="depCityName" placeholder="Departure City">
-                    <span id="depCityError"></span>
-                </div>
-                <div class="autocomplete">
-                    <label for="arrCityName">Arrival City: <br /></label>
-                    <input type="text" id="arrCityName" placeholder="Arrival City">
-                    <span id="arrCityError"></span>
-                </div>
-                <div>
-                    <label for="departDate">Departing Date: <br /></label>
-                    <input type="date" id="departDate" placeholder="Depart"> 
-                    <span id="departDateError"></span>
-                </div>
-                <div>
-                    <label for="returnDate">Returning Date: <br /></label>
-                    <input type="date" id="returnDate" placeholder="Return">
-                    <span id="returnDateError"></span>
-                </div>
-                
-                <div>
-                <label for="searchRadius">Search Radius (miles): </label>
-                    <select id="searchRadius">
-                            <option value="20">20</option>
-                            <option value="30">30</option>
-                            <option value="40">40</option>
-                    </select>
-                </div>
-
-                <div>
-                <label for="flexDays">Flexible Dates: </label>
-                    <select id="flexDays">
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                    </select>
-                </div>
-
-                <div>
-                    <input type="submit" id="searchButton" onclick="searchCities(event)", value = "Search">
-                </div>
-                
-                <div>
-                    <label for="mapStyle">Map Style: </label>
-                    <select id="mapStyle" onchange='mapStyleHandler();'>
-                        <option value="Aubergine">Aubergine</option>
-                        <option value="Standard">Standard</option>
-                        <option value="Dark">Dark</option>
-                        <option value="Retro">Retro</option>
-                        <option value="Silver">Silver</option>
-                    </select>
-                </div>   
-                <div class="loader"></div>  
-            </form>
-            <div id = "select1"></div>
-            <div id = "graph1"></div>
-            <div id = "select2"></div>
-            <div id = "graph2"></div>
-            <div id = "select3"></div>
-            <div id = "graph3"></div>
-            <div id = "select4"></div>
-            <div id = "graph4"></div>
-
+        <div class="autocomplete">
+            <label for="arrCityName">Arrival City: <br /></label>
+            <input type="text" id="arrCityName" placeholder="Arrival City">
+            <span id="arrCityError"></span>
+        </div>
+        <div>
+            <label for="departDate">Departing Date: <br /></label>
+            <input type="date" id="departDate" placeholder="Depart">
+            <span id="departDateError"></span>
+        </div>
+        <div>
+            <label for="returnDate">Returning Date: <br /></label>
+            <input type="date" id="returnDate" placeholder="Return">
+            <span id="returnDateError"></span>
         </div>
 
-
-        <div id="Heatmap" class="tabcontent">
-            <p>
-                <div id="heatmap"></div><br>
-                <div>
-                    <label for="heatmapDate">Heat Map Date: <br/></label>
-                    <input type="date" id="heatmapDate" onchange="heatmapDateHandler()" placeholder="Heatmap Date"> 
-                    <span id="Heatmap Date Error"></span>
-                </div>               
-
-                <div>
-                    <input type="submit" id="heatmapSubmitButton" onclick="searchHeatmap(event)", value = "Search">
-                </div>
-                <div>
-                    <label for="UTCHour">UTC HOUR: </label> <br>
-                    <select id="UTCHour" onmousedown="if(this.options.length>6){this.size=6;}" 
-                        onchange='this.size=0;hourChangeHandler();' onblur="this.size=0;"  name="select1">
-                        <option value="0">0</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                        <option value="10">10</option>
-                        <option value="11">11</option>
-                        <option value="12">12</option>
-                        <option value="13">13</option>
-                        <option value="14">14</option>
-                        <option value="15">15</option>
-                        <option value="16">16</option>
-                        <option value="17">17</option>
-                        <option value="18">18</option>
-                        <option value="19">19</option>
-                        <option value="20">20</option>
-                        <option value="21">21</option>
-                        <option value="22">22</option>
-                        <option value="23">23</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="heatmapStyle">Map Style: </label>
-                    <select id="heatmapStyle" onchange='heatmapStyleHandler();'>
-                        <option value="Dark">Dark</option>
-                        <option value="Aubergine">Aubergine</option>
-                        <option value="Standard">Standard</option>
-                        <option value="Retro">Retro</option>
-                        <option value="Silver">Silver</option>
-                    </select>
-                </div>   
-                <div class="heatmapLoader"></div>    
-    
-            </p>
+        <div>
+            <label for="searchRadius">Search Radius (miles): </label>
+            <select id="searchRadius">
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="40">40</option>
+            </select>
         </div>
-          
-        <script src="googleMapStyles.js"></script>
-        <script type="text/javascript">
+
+        <div>
+            <label for="flexDays">Flexible Dates: </label>
+            <select id="flexDays">
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+        </div>
+
+        <div>
+            <input type="submit" id="searchButton" onclick="searchCities(event)", value = "Search">
+        </div>
+
+        <div>
+            <label for="mapStyle">Map Style: </label>
+            <select id="mapStyle" onchange='mapStyleHandler();'>
+                <option value="Aubergine">Aubergine</option>
+                <option value="Standard">Standard</option>
+                <option value="Dark">Dark</option>
+                <option value="Retro">Retro</option>
+                <option value="Silver">Silver</option>
+            </select>
+        </div>
+        <div class="loader"></div>
+    </form>
+    <div id = "select1"></div>
+    <div id = "graph1"></div>
+    <div id = "select2"></div>
+    <div id = "graph2"></div>
+    <div id = "select3"></div>
+    <div id = "graph3"></div>
+    <div id = "select4"></div>
+    <div id = "graph4"></div>
+
+</div>
+
+
+<div id="Network Visualization" class="tabcontent">
+    <form id="entryForm" action="" autocomplete="off">
+        <div id="networkViz"></div> <br>
+        <div class="autocomplete">
+            <label for="depAirportName">Departure Airport Code: <br /></label>
+            <input type="text" id="depAirportName" placeholder="Departure Airport Code">
+            <span id="depAirportError"></span>
+        </div>
+
+        <div>
+            <label for="date1">Date 1: <br /></label>
+            <input type="date" id="date1" placeholder="Date1">
+            <span id="departDateError2"></span>
+        </div>
+        <div>
+            <label for="date2">Date 2: <br /></label>
+            <input type="date" id="date2" placeholder="Date2">
+            <span id="returnDateError2"></span>
+        </div>
+    </form>
+</div>
+
+
+
+
+<div id="Heatmap" class="tabcontent">
+    <p>
+    <div id="heatmap"></div><br>
+    <div>
+        <label for="heatmapDate">Heat Map Date: <br/></label>
+        <input type="date" id="heatmapDate" onchange="heatmapDateHandler()" placeholder="Heatmap Date">
+        <span id="Heatmap Date Error"></span>
+    </div>
+
+    <div>
+        <input type="submit" id="heatmapSubmitButton" onclick="searchHeatmap(event)", value = "Search">
+    </div>
+    <div>
+        <label for="UTCHour">UTC HOUR: </label> <br>
+        <select id="UTCHour" onmousedown="if(this.options.length>6){this.size=6;}"
+                onchange='this.size=0;hourChangeHandler();' onblur="this.size=0;"  name="select1">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="13">13</option>
+            <option value="14">14</option>
+            <option value="15">15</option>
+            <option value="16">16</option>
+            <option value="17">17</option>
+            <option value="18">18</option>
+            <option value="19">19</option>
+            <option value="20">20</option>
+            <option value="21">21</option>
+            <option value="22">22</option>
+            <option value="23">23</option>
+        </select>
+    </div>
+    <div>
+        <label for="heatmapStyle">Map Style: </label>
+        <select id="heatmapStyle" onchange='heatmapStyleHandler();'>
+            <option value="Dark">Dark</option>
+            <option value="Aubergine">Aubergine</option>
+            <option value="Standard">Standard</option>
+            <option value="Retro">Retro</option>
+            <option value="Silver">Silver</option>
+        </select>
+    </div>
+    <div class="heatmapLoader"></div>
+
+    </p>
+</div>
+
+<script src="googleMapStyles.js"></script>
+<script type="text/javascript">
             var databaseYear = 2018;
             var citiesMapHandler;
             var heatMapHandler;
+            var networkHandler;
             var depCityHandle = document.getElementById("depCityName");
             var arrCityHandle = document.getElementById("arrCityName");
             var depDateHandle = document.getElementById("departDate");
             var retDateHandle = document.getElementById("returnDate");
+            var depAirportHandle = document.getElementById("depAirportName");
+            var date1Handle = document.getElementById("date1");
+            var date2Handle = document.getElementById("date2");
+
             depCityHandle.value = "New York, New York";
             arrCityHandle.value = "Los Angeles, California";
+
+            depAirportHandle.value = "KJFK";
             //Depart and Return date defaults TODO: Remove these
             depDateHandle.focus();
             retDateHandle.focus();
@@ -316,8 +368,17 @@
             depDateHandle.text = "01/02/2020"
             retDateHandle.value = "2020-01-20";
             retDateHandle.text = "01/20/2020";
+            date1Handle.value = "2018-01-02";
+            date2Handle.value = "2018-01-20";
+            date1Handle.text = "01/02/2020";
+            date2Handle.text = "01/20/2020";
+
+
             depDateHandle.blur();
             retDateHandle.blur();
+            date1Handle.blur();
+            date2Handle.blur();
+
 
             var loader = document.getElementsByClassName("loader");
 
@@ -328,7 +389,7 @@
             heatmapDateHandle.text = "01/02/2020";
 
 
-            function initMap() 
+            function initMap()
             {
                 citiesMapHandler = new google.maps.Map(document.getElementById('citiesmap'), {
                     center: {lat: 40, lng: -95},
@@ -348,21 +409,21 @@
                 }
             }
 
-            function openTab(evt, catName) 
+            function openTab(evt, catName)
             {
                 // Declare all variables
                 var i, tabcontent, tablinks;
 
                 // Get all elements with class="tabcontent" and hide them
                 tabcontent = document.getElementsByClassName("tabcontent");
-                for (i = 0; i < tabcontent.length; i++) 
+                for (i = 0; i < tabcontent.length; i++)
                 {
                     tabcontent[i].style.display = "none";
                 }
 
                 // Get all elements with class="tablinks" and remove the class "active"
                 tablinks = document.getElementsByClassName("tablinks");
-                for (i = 0; i < tablinks.length; i++) 
+                for (i = 0; i < tablinks.length; i++)
                 {
                     tablinks[i].className = tablinks[i].className.replace(" active", "");
                 }
@@ -381,7 +442,7 @@
             var stateNames = [];
             var hourlyData = [];
             var airportsDict = {};
-            
+
             setCitySearchState(false);
             setHeatmapSearchState(false);
 
@@ -389,7 +450,7 @@
             {
                 cities = data.slice(1,data.length);
                 console.log(cities);
-                
+
                 for (i = 0; i < cities.length; i++)
                 {
                     cityNames.push(cities[i]["city_ascii"]);
@@ -397,19 +458,20 @@
                 }
                 console.log(cityNames);
                 checkSearchReady();
-               
+
             }
 
             myUtil.sendSQLQuery("SELECT * FROM airports", airportCallback);
-
             function airportCallback(data)
             {
+                console.log("in airport callback");
+                //console.log(data);
                 airports = data.slice(1, data.length);
                 //TODO: remove only a demo
                 // demoHeatMap();
                 console.log(airports);
                 airportsDict = myUtil.groupBy(airports, "icao")
-
+                console.log(airportsDict);
                 checkSearchReady();
             }
 
@@ -422,7 +484,7 @@
                 }
 
             }
-            
+
             function  setUTCHourSelectionState(enabled)
             {
                 document.getElementById("UTCHour").disabled = !enabled;
@@ -436,7 +498,7 @@
                 document.getElementById("heatmapSubmitButton").style.backgroundColor = !enabled ? "LightGrey": "DodgerBlue";
 
                 heatmapLoader[0].style.display = !enabled ? 'block' : 'none';
-                setUTCHourSelectionState(enabled);                
+                setUTCHourSelectionState(enabled);
             }
 
             function setCitySearchState(enabled)
@@ -464,14 +526,14 @@
                         d3.select('#Cities').selectAll('#graph' + graphNo).selectAll('p').remove();
                         d3.select('#Cities').selectAll('#select' + graphNo).selectAll('p').remove();
                     }
-                    
+
                 }
             }
 
             // Get the element with id="defaultOpen" and click on it
             document.getElementById("defaultOpen").click();
 
-            d3.csv("dataset/hourly.csv").then(function(data)
+            d3.csv("/dataset/hourly.csv").then(function(data)
             {
                 hourlyData = data;
                 console.log(data[0]);
@@ -484,7 +546,7 @@
                 var retVal = [];
 
                 hourlyData.forEach(function(d){
-                    if (d["Date"] == date && 
+                    if (d["Date"] == date &&
                         (departureAirport == undefined || d["estdepartureairport"] == departureAirport))
                     {
                         retVal.push(d);
@@ -495,9 +557,10 @@
             }
 
         </script>
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEvogwuKKRrOFphoADJLjYW4iPBCiTkk8&callback=initMap&libraries=geometry,visualization"
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEvogwuKKRrOFphoADJLjYW4iPBCiTkk8&callback=initMap&libraries=geometry,visualization"
         async defer></script>
-        
-        <script src="cities.js"></script>
-        <script src="airports.js"></script>
-    </body>
+
+<script src="cities.js"></script>
+<script src="airports.js"></script>
+<script src="networks.js"></script>
+</body>
