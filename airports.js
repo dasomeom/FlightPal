@@ -37,29 +37,41 @@ var heatmap = undefined;
 function searchHeatmap(event)
 {
     clearHeatMap();
-    event.preventDefault();
+    if (event != undefined)
+    {
+        event.preventDefault();
+    }
     console.log(event);
-    setHeatmapSearchState(false);
 
     ds = heatmapDateHandle.value.split("-");
-    hmDateData = searchHourlyData(databaseYear + "-" + ds[1] + "-" + ds[2]);
-    heatmapData = myUtil.groupBy(hmDateData, "Hour");
+    heatmapDate =  new Date(ds[0], ds[1]-1, ds[2]);
+    d = heatmapDate.getDate();
+    m = heatmapDate.getMonth() + 1;
+    y = heatmapDate.getFullYear();
+    now = new Date();
+    heatmapDateValid = (d > 0 && d < 32 && m >= 0 && m < 13 && heatmapDate >= now);
 
-    hourChangeHandler();
-    // defaultHour = "00";
-
-    // thisHourData = heatmapData[defaultHour];
-    // console.log(heatmapData);
-
-    // drawHeatmapData(thisHourData);
-
+    if(heatmapDateValid)
+    {
+        document.getElementById("heatmapDateError").innerHTML = "";
+        hmDateData = searchHourlyData(databaseYear + "-" + ds[1] + "-" + ds[2]);
+        heatmapData = myUtil.groupBy(hmDateData, "Hour");
+        hourChangeHandler();        
+    }
+    else
+    {
+        document.getElementById("heatmapDateError").innerHTML = "Invalid date";
+        document.getElementById("heatmapDateError").style.color = "red";
+    }
 }
 
 function heatmapDateHandler()
 {
+    document.getElementById("heatmapDateError").innerHTML = "";
     clearHeatMap();
     heatmapData = [];
     heatmap = undefined;
+    searchHeatmap();
 }
 
 function hourChangeHandler()

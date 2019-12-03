@@ -247,7 +247,7 @@
                 <div>
                     <label for="heatmapDate">Heat Map Date: <br/></label>
                     <input type="date" id="heatmapDate" onchange="heatmapDateHandler()" placeholder="Heatmap Date"> 
-                    <span id="Heatmap Date Error"></span>
+                    <span id="heatmapDateError"></span>
                 </div>               
 
                 <div>
@@ -286,9 +286,9 @@
                 <div>
                     <label for="heatmapStyle">Map Style: </label>
                     <select id="heatmapStyle" onchange='heatmapStyleHandler();'>
-                        <option value="Dark">Dark</option>
                         <option value="Aubergine">Aubergine</option>
                         <option value="Standard">Standard</option>
+                        <option value="Dark">Dark</option>
                         <option value="Retro">Retro</option>
                         <option value="Silver">Silver</option>
                     </select>
@@ -339,7 +339,7 @@
                 heatMapHandler =  new google.maps.Map(document.getElementById('heatmap'), {
                     center: {lat: 40, lng: -95},
                     zoom: 3.8,
-                    styles: darkStyle
+                    styles: aubergineStyle
                 });
 
 
