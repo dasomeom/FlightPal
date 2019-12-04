@@ -523,8 +523,8 @@
 
                 console.log("building LMS data for: ", departureAirport, "on: ", date);
                 ds = date.split("-");
-                sDay = ds[2];
-                sMonth = ds[1];
+                sDay = Number(ds[2]);
+                sMonth = Number(ds[1]);
                 //get the coefficients for the airport    
                 if(departureAirport != undefined)
                 {
@@ -534,12 +534,15 @@
                             monthCoef = d["monthCoef"];
                             dayCoef = d["dayCoef"];
                             hourCoef = d["hourCoef"];
+                            month2Coef = d["month2Coef"];
+                            day2Coef = d["day2Coef"];
+                            hour2Coef = d["hour2Coef"];
 
                             //build data for each hour
                             for (hr = 0; hr < 24; hr++)
                             {
                                 //calculate LMS count for each hour
-                                cnt = (monthCoef * Number(sMonth)) + (dayCoef * Number(sDay) + hourCoef * hr);
+                                cnt = (monthCoef * sMonth + dayCoef * sDay + hourCoef * hr + month2Coef * sMonth*sMonth + day2Coef * sDay*sDay + hour2Coef * hr*hr);
                                 retVal.push({Hour:hr, Date:myUtil.formatDate(date,'/'), estdepartureairport:departureAirport, count: cnt})
                             }
                             //break;
