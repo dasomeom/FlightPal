@@ -226,7 +226,14 @@
                         <option value="Retro">Retro</option>
                         <option value="Silver">Silver</option>
                     </select>
-                </div>   
+                </div>  
+                <div>
+                    <label for="ModelSelection"> Model: </label>
+                    <select id="ModelSelection">
+                        <option value="Replay">Replay</option>
+                        <option value="Least-Squares Model">Least-Squares Model</option>
+                    </select>
+                </div> 
                 <div class="loader"></div>  
             </form>
             <div id = "select1"></div>
@@ -307,6 +314,7 @@
             var arrCityHandle = document.getElementById("arrCityName");
             var depDateHandle = document.getElementById("departDate");
             var retDateHandle = document.getElementById("returnDate");
+            var modelHandle = document.getElementById("ModelSelection");
             depCityHandle.value = "New York, New York";
             arrCityHandle.value = "Los Angeles, California";
             //Depart and Return date defaults TODO: Remove these
@@ -449,6 +457,9 @@
                 depDateHandle.style.backgroundColor = !enabled ? "LightGrey": "white";
                 retDateHandle.disabled = !enabled;
                 retDateHandle.style.backgroundColor = !enabled ? "LightGrey": "white";
+                modelHandle.disabled = !enabled;
+                modelHandle.style.backgroundColor = !enabled ? "LightGrey": "white";
+                
                 document.getElementById("searchButton").disabled = !enabled;
                 document.getElementById("searchButton").style.backgroundColor = !enabled ? "LightGrey": "DodgerBlue";
                 document.getElementById("searchRadius").disabled = !enabled;
@@ -490,6 +501,53 @@
                         retVal.push(d);
                     }
                 });
+
+                return retVal;
+            }
+
+            var LMSData = [];
+            d3.csv("Matlab/coef.csv").then(function(data)
+            {
+                LMSData = data;
+                console.log(data[0]);
+                searchData = searchLMSData("2018-01-01", "KJFK");
+                console.log(searchData);
+            });
+
+            function searchLMSData(date, departureAirport)
+            {
+                var retVal = [];
+                var monthCoef = 0;
+                var dayCoef = 0;
+                var hourCoef = 0;
+
+                console.log("building LMS data for: ", departureAirport, "on: ", date);
+                ds = date.split("-");
+                sDay = ds[2];
+                sMonth = ds[1];
+                //get the coefficients for the airport    
+                if(departureAirport != undefined)
+                {
+                    LMSData.forEach(function(d){
+                        if (d["airport"] == departureAirport)
+                        {
+                            monthCoef = d["monthCoef"];
+                            dayCoef = d["dayCoef"];
+                            hourCoef = d["hourCoef"];
+
+                            //build data for each hour
+                            for (hr = 0; hr < 24; hr++)
+                            {
+                                //calculate LMS count for each hour
+                                cnt = (monthCoef * Number(sMonth)) + (dayCoef * Number(sDay) + hourCoef * hr);
+                                retVal.push({Hour:hr, Date:myUtil.formatDate(date,'/'), estdepartureairport:departureAirport, count: cnt})
+                            }
+                            //break;
+                        }
+                    });
+                }
+            
+                
 
                 return retVal;
             }

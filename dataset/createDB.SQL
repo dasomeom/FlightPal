@@ -65,6 +65,10 @@ SELECT strftime('%H', firstseen,'unixepoch') as Hour, date(firstseen,'unixepoch'
 FROM opensky
 GROUP BY estdepartureairport, Date, Hour;
 
+.output hourly2.csv
+SELECT strftime('%H', firstseen,'unixepoch') as Hour, strftime('%d', firstseen,'unixepoch') as day,  estdepartureairport, count(estdepartureairport) as count 
+FROM opensky
+GROUP BY estdepartureairport, Date, Hour;
 
 
 -- .mode csv;

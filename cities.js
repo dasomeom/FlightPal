@@ -233,13 +233,27 @@ function searchCities(event)
                 for(i = 0; i < depira.length; i++)
                 {
                     thisICAO = depira[i]["icao"];
-                    thisData = searchHourlyData(dateString, thisICAO);
+                    if(modelHandle.value == "Replay")
+                    {
+                        thisData = searchHourlyData(dateString, thisICAO);
+                    }
+                    else
+                    {
+                        thisData = searchLMSData(dateString, thisICAO);
+                    }
                     addToAirportData(departAirportDepartData, thisData, new Date(thisDepartDay), depira[i]);
                 }
                 for(i = 0; i < arrira.length; i++)
                 {
                     thisICAO = arrira[i]["icao"];
-                    thisData = searchHourlyData(dateString, thisICAO);
+                    if(modelHandle.value == "Replay")
+                    {
+                        thisData = searchHourlyData(dateString, thisICAO);
+                    }
+                    else
+                    {
+                        thisData = searchLMSData(dateString, thisICAO);
+                    }
                     addToAirportData(arrivalAirportDepartData, thisData, new Date(thisDepartDay), arrira[i]);
                 }
                 thisDepartDay.setDate(thisDepartDay.getDate() + 1);
@@ -251,13 +265,27 @@ function searchCities(event)
                 for(i = 0; i < depira.length; i++)
                 {
                     thisICAO = depira[i]["icao"];
-                    thisData = searchHourlyData(dateString, thisICAO);
+                    if(modelHandle.value == "Replay")
+                    {
+                        thisData = searchHourlyData(dateString, thisICAO);
+                    }
+                    else
+                    {
+                        thisData = searchLMSData(dateString, thisICAO);
+                    }
                     addToAirportData(departAirportReturnData, thisData, new Date(thisReturnDay), depira[i])
                 }
                 for(i = 0; i < arrira.length; i++)
                 {
                     thisICAO = arrira[i]["icao"];
-                    thisData = searchHourlyData(dateString, thisICAO);
+                    if(modelHandle.value == "Replay")
+                    {
+                        thisData = searchHourlyData(dateString, thisICAO);
+                    }
+                    else
+                    {
+                        thisData = searchLMSData(dateString, thisICAO);
+                    }
                     addToAirportData(arrivalAirportReturnData, thisData, new Date(thisReturnDay), arrira[i])
                     
                 }
@@ -347,6 +375,50 @@ function searchCities(event)
             .property("selected", function(d){
                 return d == defaultAirport;})
             .text(function (d) { return d; });
+
+
+             d3.select('#Cities').selectAll('#select' + graphNo).selectAll('p').remove();
+            var select = d3.select('#Cities').select('#select' + graphNo)
+                            .append('p')
+                            .append('select')
+                            .attr('class','select')
+                            .on('change',function() 
+                            {
+                                //d3.select("#graph").remove();
+                                // d3.select('#Cities').selectAll('select1').remove();
+                                selectValue = d3.select('#Cities')
+                                                .select('#select' + graphNo)
+                                                .select('p')
+                                                .select('select')
+                                                .property('value');
+                                displayBarChart(groupedData[selectValue], ps, graphNo, titlePrefix)
+                            });
+            var maxFlights = 0;
+            var defaultAirport;
+            var airportICAOs = [];
+            //console.log(groupedData);
+            for (i in groupedData)
+            {
+                groupedData[i].forEach(function(d){
+                    if (maxFlights <= d["count"])
+                    {
+                        defaultAirport = i;
+                        maxFlights = d["count"]
+                    }
+                });                       
+                airportICAOs.push(i);
+                //create a menu item
+            }
+            
+            //console.log(defaultAirport);
+            var options = select
+            .selectAll('option')
+            .data(airportICAOs).enter()
+            .append('option')
+            .property("selected", function(d){
+                return d == defaultAirport;})
+            .text(function (d) { return d; });
+            
 
             displayBarChart(groupedData[defaultAirport], ps, graphNo, titlePrefix);
 
