@@ -2,6 +2,15 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
+        <script src="lib/utility.js"></script>
+        <script src="lib/d3.v5.min.js"></script>
+        <script src="googleMapStyles.js"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEvogwuKKRrOFphoADJLjYW4iPBCiTkk8&callback=initMap&libraries=geometry,visualization"
+        async defer></script>
+
+        <script src="cities.js"></script>
+        <script src="airports.js"></script>
+        <script src="delay.js"></script>
         <style>
             #citiesmap{
                 top:10px;
@@ -160,15 +169,11 @@
 
     </head>
 
-    <body>  
-        <script src="lib/utility.js"></script> 
-        <script src="lib/d3.v5.min.js"></script>
-       
-
-        
+    <body>
         <div class="tab">
             <button class="tablinks" onclick="openTab(event, 'Cities')" id="defaultOpen">Flights</button>
             <button class="tablinks" onclick="openTab(event, 'Heatmap')">Heat Map</button>
+            <button class="tablinks" onclick="window.location.href='templates/delay.html'">Flight Delay</button>
         </div>
         <!-- Tab content -->
         <div id="Cities" class="tabcontent">
@@ -240,7 +245,6 @@
 
         </div>
 
-
         <div id="Heatmap" class="tabcontent">
             <p>
                 <div id="heatmap"></div><br>
@@ -297,8 +301,6 @@
     
             </p>
         </div>
-          
-        <script src="googleMapStyles.js"></script>
         <script type="text/javascript">
             var databaseYear = 2018;
             var citiesMapHandler;
@@ -388,14 +390,12 @@
             function citiesCallback(data)
             {
                 cities = data.slice(1,data.length);
-                console.log(cities);
                 
                 for (i = 0; i < cities.length; i++)
                 {
                     cityNames.push(cities[i]["city_ascii"]);
                     stateNames.push(cities[i]["admin_name"]);
                 }
-                console.log(cityNames);
                 checkSearchReady();
                
             }
@@ -407,7 +407,6 @@
                 airports = data.slice(1, data.length);
                 //TODO: remove only a demo
                 // demoHeatMap();
-                console.log(airports);
                 airportsDict = myUtil.groupBy(airports, "icao")
 
                 checkSearchReady();
@@ -474,9 +473,7 @@
             d3.csv("dataset/hourly.csv").then(function(data)
             {
                 hourlyData = data;
-                console.log(data[0]);
                 searchData = searchHourlyData("2018-01-01", "KIAD");
-                console.log(searchData);
             });
 
             function searchHourlyData(date, departureAirport = undefined)
@@ -493,11 +490,6 @@
 
                 return retVal;
             }
-
         </script>
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCEvogwuKKRrOFphoADJLjYW4iPBCiTkk8&callback=initMap&libraries=geometry,visualization"
-        async defer></script>
-        
-        <script src="cities.js"></script>
-        <script src="airports.js"></script>
+
     </body>
