@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Flight Delay Estimation</title>
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link type="text/css" href="css/bootstrap-timepicker.min.css" />
+    <script>
+        $( function() {
+            var availableTags = [
+                "ABE, Lehigh Valley International Airport, Allentown",
+                "ABI, Abilene Regional Airport, Abilene",
+                "ABQ, Albuquerque International Sunport, Albuquerque",
+                "ABR, Aberdeen Regional Airport, Aberdeen",
+                "ABY, Southwest Georgia Regional Airport, Albany",
+                "ACT, Waco Regional Airport, Waco",
+                "ACV, California Redwood Coast-Humboldt County Airport, Arcata CA",
+                "ACY, Atlantic City International Airport, Atlantic City",
+                "ADK, Adak Airport, Adak Island",
+                "ADQ, Kodiak Airport, Kodiak",
+                "AEX, Alexandria International Airport, Alexandria",
+                "AGS, Augusta Regional At Bush Field, Bush Field",
+                "ALB, Albany International Airport, Albany",
+                "ALO, Waterloo Regional Airport, Waterloo",
+                "AMA, Rick Husband Amarillo International Airport, Amarillo",
+                "ANC, Ted Stevens Anchorage International Airport, Anchorage",
+                "APN, Alpena County Regional Airport, Alpena",
+                "ASE, Aspen-Pitkin Co/Sardy Field, Aspen",
+                "ATL, Hartsfield Jackson Atlanta International Airport, Atlanta",
+                "ATW, Appleton International Airport, Appleton",
+                "AUS, Austin Bergstrom International Airport, Austin",
+                "AVL, Asheville Regional Airport, Asheville",
+                "AVP, Wilkes Barre Scranton International Airport, Scranton",
+                "AZA, Phoenix-Mesa-Gateway Airport, Mesa",
+                "AZO, Kalamazoo Battle Creek International Airport, Kalamazoo",
+                "BDL, Bradley International Airport, Windsor Locks",
+                "BET, Bethel Airport, Bethel",
+                "BFF, Western Neb. Rgnl/William B. Heilig Airport, Scottsbluff",
+                "BFL, Meadows Field, Bakersfield",
+                "BGM, Greater Binghamton/Edwin A Link field, Binghamton",
+                "BGR, Bangor International Airport, Bangor",
+                "IFP, Laughlin/Bullhead International Airport, Bullhead City",
+                "BHM, Birmingham-Shuttlesworth International Airport, Birmingham",
+                "BIL, Billings Logan International Airport, Billings",
+                "BIS, Bismarck Municipal Airport, Bismarck",
+                "BJI, Bemidji Regional Airport, Bemidji",
+                "BLI, Bellingham International Airport, Bellingham",
+                "BLV, Scott AFB/Midamerica Airport, Belleville",
+                "BMI, Central Illinois Regional Airport at Bloomington-Normal, Bloomington",
+                "BNA, Nashville International Airport, Nashville",
+                "BOI, Boise Air Terminal/Gowen Field, Boise",
+                "BOS, General Edward Lawrence Logan International Airport, Boston",
+                "BPT, Southeast Texas Regional Airport, Beaumont",
+                "BQK, Brunswick Golden Isles Airport, Brunswick",
+                "BQN, Rafael Hernandez Airport, Aguadilla",
+                "BRD, Brainerd Lakes Regional Airport, Brainerd",
+                "BRO, Brownsville South Padre Island International Airport, Brownsville",
+                "BRW, Wiley Post Will Rogers Memorial Airport, Barrow",
+                "BTM, Bert Mooney Airport, Butte",
+                "BTR, Baton Rouge Metropolitan Airport, Baton Rouge",
+                "BTV, Burlington International Airport, Burlington",
+                "BUF, Buffalo Niagara International Airport, Buffalo",
+                "BUR, Bob Hope Airport, Burbank",
+                "BWI, Baltimore/Washington International Thurgood Marshall Airport, Baltimore",
+                "BZN, Gallatin Field, Bozeman",
+                "CAE, Columbia Metropolitan Airport, Columbia",
+                "CAK, Akron Canton Regional Airport, Akron",
+                "CDC, Cedar City Regional Airport, Cedar City",
+                "CDV, Merle K (Mudhole) Smith Airport, Cordova",
+                "CGI, Cape Girardeau Regional Airport, Cape Girardeau",
+                "CHA, Lovell Field, Chattanooga",
+                "CHO, Charlottesville Albemarle Airport, Charlottesville VA",
+                "CHS, Charleston Air Force Base-International Airport, Charleston",
+                "CID, The Eastern Iowa Airport, Cedar Rapids",
+                "CIU, Chippewa County International Airport, Sault Ste Marie",
+                "CKB, North Central West Virginia Airport, Clarksburg",
+                "CLE, Cleveland Hopkins International Airport, Cleveland",
+                "CLL, Easterwood Field, College Station",
+                "CLT, Charlotte Douglas International Airport, Charlotte",
+                "CMH, John Glenn Columbus International Airport, Columbus",
+                "CMI, University of Illinois Willard Airport, Champaign",
+                "CMX, Houghton County Memorial Airport, Hancock",
+                "COD, Yellowstone Regional Airport, Cody",
+                "COS, City of Colorado Springs Municipal Airport, Colorado Springs",
+                "COU, Columbia Regional Airport, Columbia",
+                "CPR, Casper-Natrona County International Airport, Casper",
+                "CRP, Corpus Christi International Airport, Corpus Christi",
+                "CRW, Yeager Airport, Charleston",
+                "CSG, Columbus Metropolitan Airport, Columbus",
+                "CVG, Cincinnati Northern Kentucky International Airport, Cincinnati",
+                "CWA, Central Wisconsin Airport, Wassau",
+                "DAB, Daytona Beach International Airport, Daytona Beach",
+                "DAL, Dallas Love Field, Dallas",
+                "DAY, James M Cox Dayton International Airport, Dayton",
+                "DBQ, Dubuque Regional Airport, Dubuque IA",
+                "DCA, Ronald Reagan Washington National Airport, Washington",
+                "DEN, Denver International Airport, Denver",
+                "DFW, Dallas Fort Worth International Airport, Dallas-Fort Worth",
+                "DHN, Dothan Regional Airport, Dothan",
+                "DLH, Duluth International Airport, Duluth",
+                "DRO, Durango La Plata County Airport, Durango",
+                "DSM, Des Moines International Airport, Des Moines",
+                "DTW, Detroit Metropolitan Wayne County Airport, Detroit",
+                "DVL, Devils Lake Regional Airport, Devils Lake",
+                "EAU, Chippewa Valley Regional Airport, Eau Claire",
+                "ECP, Northwest Florida Beaches International Airport, Panama City",
+                "EGE, Eagle County Regional Airport, Vail",
+                "EKO, Elko Regional Airport, Elko",
+                "ELM, Elmira Corning Regional Airport, Elmira",
+                "ELP, El Paso International Airport, El Paso",
+                "ERI, Erie International Tom Ridge Field, Erie",
+                "ESC, Delta County Airport, Escanaba",
+                "EUG, Mahlon Sweet Field, Eugene",
+                "EVV, Evansville Regional Airport, Evansville",
+                "EWN, Coastal Carolina Regional Airport, New Bern",
+                "EWR, Newark Liberty International Airport, Newark",
+                "EYW, Key West International Airport, Key West",
+                "FAI, Fairbanks International Airport, Fairbanks",
+                "FAR, Hector International Airport, Fargo",
+                "FAT, Fresno Yosemite International Airport, Fresno",
+                "FAY, Fayetteville Regional Grannis Field, Fayetteville",
+                "FCA, Glacier Park International Airport, Kalispell",
+                "FLG, Flagstaff Pulliam Airport, Flagstaff",
+                "FLL, Fort Lauderdale Hollywood International Airport, Fort Lauderdale",
+                "FLO, Florence Regional Airport, Florence",
+                "FNT, Bishop International Airport, Flint",
+                "FSD, Joe Foss Field Airport, Sioux Falls",
+                "FSM, Fort Smith Regional Airport, Fort Smith",
+                "FWA, Fort Wayne International Airport, Fort Wayne",
+                "GCC, Gillette Campbell County Airport, Gillette",
+                "GCK, Garden City Regional Airport, Garden City",
+                "GEG, Spokane International Airport, Spokane",
+                "GFK, Grand Forks International Airport, Grand Forks",
+                "GGG, East Texas Regional Airport, Longview",
+                "GJT, Grand Junction Regional Airport, Grand Junction",
+                "GNV, Gainesville Regional Airport, Gainesville",
+                "GPT, Gulfport Biloxi International Airport, Gulfport",
+                "GRB, Austin Straubel International Airport, Green Bay",
+                "GRI, Central Nebraska Regional Airport, Grand Island",
+                "GRK, Robert Gray  Army Air Field Airport, Killeen",
+                "GRR, Gerald R. Ford International Airport, Grand Rapids",
+                "GSO, Piedmont Triad International Airport, Greensboro",
+                "GSP, Greenville Spartanburg International Airport, Greenville",
+                "GTF, Great Falls International Airport, Great Falls",
+                "GTR, Golden Triangle Regional Airport, Columbus Mississippi",
+                "GUC, Gunnison Crested Butte Regional Airport, Gunnison",
+                "GUM, Antonio B. Won Pat International Airport, Agana",
+                "HDN, Yampa Valley Airport, Hayden",
+                "HGR, Hagerstown Regional Richard A Henson Field, Hagerstown",
+                "HIB, Range Regional Airport, Hibbing",
+                "HLN, Helena Regional Airport, Helena",
+                "HNL, Daniel K Inouye International Airport, Honolulu",
+                "HOB, Lea County Regional Airport, Hobbs",
+                "HOU, William P Hobby Airport, Houston",
+                "HPN, Westchester County Airport, White Plains",
+                "HRL, Valley International Airport, Harlingen",
+                "HSV, Huntsville International Carl T Jones Field, Huntsville",
+                "HTS, Tri-State/Milton J. Ferguson Field, Huntington",
+                "HVN, Tweed New Haven Airport, New Haven",
+                "HYS, Hays Regional Airport, Hays",
+                "IAD, Washington Dulles International Airport, Washington",
+                "IAG, Niagara Falls International Airport, Niagara Falls",
+                "IAH, George Bush Intercontinental Houston Airport, Houston",
+                "ICT, Wichita Eisenhower National Airport, Wichita",
+                "IDA, Idaho Falls Regional Airport, Idaho Falls",
+                "ILM, Wilmington International Airport, Wilmington",
+                "IMT, Ford Airport, Iron Mountain",
+                "IND, Indianapolis International Airport, Indianapolis",
+                "INL, Falls International Airport, International Falls",
+                "ISN, Sloulin Field International Airport, Williston",
+                "ISP, Long Island Mac Arthur Airport, Islip",
+                "ITH, Ithaca Tompkins Regional Airport, Ithaca",
+                "ITO, Hilo International Airport, Hilo",
+                "JAC, Jackson Hole Airport, Jacksn Hole",
+                "JAN, Jackson-Medgar Wiley Evers International Airport, Jackson",
+                "JAX, Jacksonville International Airport, Jacksonville",
+                "JFK, John F Kennedy International Airport, New York",
+                "JLN, Joplin Regional Airport, Joplin",
+                "JMS, Jamestown Regional Airport, Jamestown",
+                "JNU, Juneau International Airport, Juneau",
+                "USA, Concord-Padgett Regional Airport, Concord",
+                "KOA, Ellison Onizuka Kona International At Keahole Airport, Kona",
+                "KTN, Ketchikan International Airport, Ketchikan",
+                "LAN, Capital City Airport, Lansing",
+                "LAR, Laramie Regional Airport, Laramie",
+                "LAS, McCarran International Airport, Las Vegas",
+                "LAW, Lawton Fort Sill Regional Airport, Lawton",
+                "LAX, Los Angeles International Airport, Los Angeles",
+                "LBB, Lubbock Preston Smith International Airport, Lubbock",
+                "LBE, Arnold Palmer Regional Airport, Latrobe",
+                "LBF, North Platte Regional Airport Lee Bird Field, North Platte",
+                "LBL, Liberal Mid-America Regional Airport, Liberal",
+                "LCH, Lake Charles Regional Airport, Lake Charles",
+                "LCK, Rickenbacker International Airport, Columbus",
+                "LEX, Blue Grass Airport, Lexington KY",
+                "LFT, Lafayette Regional Airport, Lafayette",
+                "LGA, La Guardia Airport, New York",
+                "LGB, Long Beach /Daugherty Field/ Airport, Long Beach",
+                "LIH, Lihue Airport, Lihue",
+                "LIT, Bill & Hillary Clinton National Airport/Adams Field, Little Rock",
+                "LNK, Lincoln Airport, Lincoln",
+                "LRD, Laredo International Airport, Laredo",
+                "LSE, La Crosse Municipal Airport, La Crosse",
+                "LWS, Lewiston Nez Perce County Airport, Lewiston",
+                "LYH, Lynchburg Regional Preston Glenn Field, Lynchburg",
+                "MAF, Midland International Airport, Midland",
+                "MBS, MBS International Airport, Saginaw",
+                "MCI, Kansas City International Airport, Kansas City",
+                "MCO, Orlando International Airport, Orlando",
+                "MDT, Harrisburg International Airport, Harrisburg",
+                "MDW, Chicago Midway International Airport, Chicago",
+                "MEI, Key Field, Meridian",
+                "MEM, Memphis International Airport, Memphis",
+                "MFE, Mc Allen Miller International Airport, Mcallen",
+                "MFR, Rogue Valley International Medford Airport, Medford",
+                "MGM, Montgomery Regional (Dannelly Field) Airport, MONTGOMERY",
+                "MHK, Manhattan Regional Airport, Manhattan",
+                "MHT, Manchester-Boston Regional Airport, Manchester NH",
+                "MIA, Miami International Airport, Miami",
+                "MKE, General Mitchell International Airport, Milwaukee",
+                "MKG, Muskegon County Airport, Muskegon",
+                "MLB, Melbourne International Airport, Melbourne",
+                "MLI, Quad City International Airport, Moline",
+                "MLU, Monroe Regional Airport, Monroe",
+                "MMH, Mammoth Yosemite Airport, Mammoth Lakes",
+                "MOB, Mobile Regional Airport, Mobile",
+                "MOT, Minot International Airport, Minot",
+                "MQT, Sawyer International Airport, Gwinn",
+                "MRY, Monterey Peninsula Airport, Monterey",
+                "MSN, Dane County Regional Truax Field, Madison",
+                "MSO, Missoula International Airport, Missoula",
+                "MSP, Minneapolis-St Paul International/Wold-Chamberlain Airport, Minneapolis",
+                "MSY, Louis Armstrong New Orleans International Airport, New Orleans",
+                "MTJ, Montrose Regional Airport, Montrose CO",
+                "MYR, Myrtle Beach International Airport, Myrtle Beach",
+                "OAJ, Albert J Ellis Airport, Jacksonville NC",
+                "OAK, Metropolitan Oakland International Airport, Oakland",
+                "OGD, Ogden Hinckley Airport, Ogden",
+                "OGG, Kahului Airport, Kahului",
+                "OGS, Ogdensburg International Airport, Ogdensburg",
+                "OKC, Will Rogers World Airport, Oklahoma City",
+                "OMA, Eppley Airfield, Omaha",
+                "OME, Nome Airport, Nome",
+                "ONT, Ontario International Airport, Ontario",
+                "ORD, Chicago O'Hare International Airport, Chicago",
+                "ORF, Norfolk International Airport, Norfolk",
+                "ORH, Worcester Regional Airport, Worcester",
+                "OTH, Southwest Oregon Regional Airport, North Bend",
+                "OTZ, Ralph Wien Memorial Airport, Kotzebue",
+                "OWB, Owensboro Daviess County Airport, Owensboro",
+                "PAH, Barkley Regional Airport, PADUCAH",
+                "PBG, Plattsburgh International Airport, Plattsburgh",
+                "PBI, Palm Beach International Airport, West Palm Beach",
+                "PDX, Portland International Airport, Portland",
+                "PGD, Charlotte County Airport, Punta Gorda",
+                "PHF, Newport News Williamsburg International Airport, Newport News",
+                "PHL, Philadelphia International Airport, Philadelphia",
+                "PHX, Phoenix Sky Harbor International Airport, Phoenix",
+                "PIA, General Wayne A. Downing Peoria International Airport, Peoria",
+                "PIB, Hattiesburg Laurel Regional Airport, Hattiesburg/Laurel",
+                "PIE, St Petersburg Clearwater International Airport, St. Petersburg",
+                "PIH, Pocatello Regional Airport, Pocatello",
+                "PIT, Pittsburgh International Airport, Pittsburgh",
+                "PLN, Pellston Regional Airport of Emmet County Airport, Pellston",
+                "PNS, Pensacola Regional Airport, Pensacola",
+                "PPG, Pago Pago International Airport, Pago Pago",
+                "PSC, Tri Cities Airport, Pasco",
+                "PSE, Mercedita Airport, Ponce",
+                "PSG, Petersburg James A Johnson Airport, Petersburg",
+                "PSM, Portsmouth International at Pease Airport, Portsmouth",
+                "PSP, Palm Springs International Airport, Palm Springs",
+                "PUB, Pueblo Memorial Airport, Pueblo",
+                "PVD, Theodore Francis Green State Airport, Providence",
+                "PVU, Provo Municipal Airport, Provo",
+                "PWM, Portland International Jetport Airport, Portland",
+                "RAP, Rapid City Regional Airport, Rapid City",
+                "RDD, Redding Municipal Airport, Redding",
+                "RDM, Roberts Field, Redmond-Bend",
+                "RDU, Raleigh Durham International Airport, Raleigh-durham",
+                "RFD, Chicago Rockford International Airport, Rockford",
+                "RHI, Rhinelander Oneida County Airport, Rhinelander",
+                "RIC, Richmond International Airport, Richmond",
+                "RKS, Southwest Wyoming Regional Airport, Rock Springs",
+                "RNO, Reno Tahoe International Airport, Reno",
+                "ROA, Roanoke?????Blacksburg Regional Airport, Roanoke VA",
+                "ROC, Greater Rochester International Airport, Rochester",
+                "ROW, Roswell International Air Center Airport, Roswell",
+                "RST, Rochester International Airport, Rochester",
+                "RSW, Southwest Florida International Airport, Fort Myers",
+                "SAF, Santa Fe Municipal Airport, Santa Fe",
+                "SAN, San Diego International Airport, San Diego",
+                "SAT, San Antonio International Airport, San Antonio",
+                "SAV, Savannah Hilton Head International Airport, Savannah",
+                "SBA, Santa Barbara Municipal Airport, Santa Barbara",
+                "SBN, South Bend Regional Airport, South Bend",
+                "SBP, San Luis County Regional Airport, San Luis Obispo",
+                "SCC, Deadhorse Airport, Deadhorse",
+                "SCE, University Park Airport, State College Pennsylvania",
+                "SCK, Stockton Metropolitan Airport, Stockton",
+                "SDF, Louisville International Standiford Field, Louisville",
+                "SEA, Seattle Tacoma International Airport, Seattle",
+                "SFB, Orlando Sanford International Airport, Sanford",
+                "SFO, San Francisco International Airport, San Francisco",
+                "SGF, Springfield Branson National Airport, Springfield",
+                "SGU, St George Municipal Airport, Saint George",
+                "SHV, Shreveport Regional Airport, Shreveport",
+                "SIT, Sitka Rocky Gutierrez Airport, Sitka",
+                "SJC, Norman Y. Mineta San Jose International Airport, San Jose",
+                "SJT, San Angelo Regional Mathis Field, San Angelo",
+                "SJU, Luis Munoz Marin International Airport, San Juan",
+                "SLC, Salt Lake City International Airport, Salt Lake City",
+                "SMF, Sacramento International Airport, Sacramento",
+                "SMX, Santa Maria Pub/Capt G Allan Hancock Field, Santa Maria",
+                "SNA, John Wayne Airport-Orange County Airport, Santa Ana",
+                "SPI, Abraham Lincoln Capital Airport, Springfield",
+                "SPS, Sheppard Air Force Base-Wichita Falls Municipal Airport, Wichita Falls",
+                "SRQ, Sarasota Bradenton International Airport, Sarasota",
+                "STC, St Cloud Regional Airport, Saint Cloud",
+                "STL, St Louis Lambert International Airport, St. Louis",
+                "STS, Charles M. Schulz Sonoma County Airport, Santa Rosa",
+                "STT, Cyril E. King Airport, St. Thomas",
+                "STX, Henry E Rohlsen Airport, St. Croix Island",
+                "SUN, Friedman Memorial Airport, Hailey",
+                "SUX, Sioux Gateway Col. Bud Day Field, Sioux City",
+                "SWF, Stewart International Airport, Newburgh",
+                "SWO, Stillwater Regional Airport, Stillwater",
+                "SYR, Syracuse Hancock International Airport, Syracuse",
+                "TLH, Tallahassee Regional Airport, Tallahassee",
+                "TOL, Toledo Express Airport, Toledo",
+                "TPA, Tampa International Airport, Tampa",
+                "TRI, Tri-Cities Regional TN/VA Airport, BRISTOL",
+                "TTN, Trenton Mercer Airport, Trenton",
+                "TUL, Tulsa International Airport, Tulsa",
+                "TUS, Tucson International Airport, Tucson",
+                "TVC, Cherry Capital Airport, Traverse City",
+                "TWF, Joslin Field Magic Valley Regional Airport, Twin Falls",
+                "TXK, Texarkana Regional Webb Field, Texarkana",
+                "TYR, Tyler Pounds Regional Airport, Tyler",
+                "TYS, McGhee Tyson Airport, Knoxville",
+                "UIN, Quincy Regional Baldwin Field, Quincy",
+                "VLD, Valdosta Regional Airport, Valdosta",
+                "VPS, Destin-Ft Walton Beach Airport, Valparaiso",
+                "WRG, Wrangell Airport, Wrangell",
+                "XNA, Northwest Arkansas Regional Airport, Bentonville",
+                "YAK, Yakutat Airport, Yakutat",
+                "YNG, Youngstown Warren Regional Airport, Youngstown",
+                "YUM, Yuma MCAS/Yuma International Airport, Yuma",
+            ];
+            $( "#depAirport" ).autocomplete({
+              source: availableTags
+            });
+            $( "#arrAirport" ).autocomplete({
+              source: availableTags
+            });
+        });
+    </script>
+</head>
+<html>
+    <style>
+<html>
+<style media="screen">
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+/* Style the tab */
+.tab {
+overflow: hidden;
+border: 1px solid #ccc;
+background-color: #f1f1f1;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tab button {
+background-color: inherit;
+float: left;
+border: none;
+outline: none;
+cursor: pointer;
+padding: 14px 16px;
+transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+display: none;
+padding: 6px 12px;
+border: 1px solid #ccc;
+border-top: none;
+}
+.tabcontent {
+animation: fadeEffect 1s; /* Fading effect takes 1 second */
+}
+
+
+.form-unconfirmed {
+    width: 100%;
+    padding: 50px;
+    margin: 0 auto;
+}
+.form-unconfirmed .checkbox {
+    font-weight: 400;
+}
+.form-unconfirmed .form-control {
+    position: relative;
+    box-sizing: border-box;
+    height: auto;
+    padding: 10px;
+    font-size: 16px;
+}
+.form-signin .form-control:
+    focus {
+    z-index: 2;
+}
+
+div {
+    width: 100%
+}
+.form-signin {
+  width: 100%;
+  max-width: 320px;
+  padding: 15px;
+  margin: 0 auto;
+}
+.form-signin .checkbox {
+  font-weight: 400;
+}
+.form-signin .form-control {
+  position: relative;
+  box-sizing: border-box;
+  height: auto;
+  padding: 10px;
+  font-size: 16px;
+}
+.form-signin .form-control:focus {
+  z-index: 2;
+}
+.form-signin input[type="email"] {
+  margin-bottom: 10px;
+  border-bottom-right-radius: 1;
+  border-bottom-left-radius: 1;
+}
+.form-signin input[type="password"] {
+  margin-bottom: 10px;
+  border-top-left-radius: 1;
+  border-top-right-radius: 1;
+}
+
+.autocomplete {
+  /*the container must be positioned relative:*/
+  position: relative;
+  display: inline-block;
+}
+
+
+.autocomplete-items {
+  position: absolute;
+  border: 1px solid #d4d4d4;
+  border-bottom: none;
+  border-top: none;
+  z-index: 99;
+  /*position the autocomplete items to be the same width as the container:*/
+  top: 100%;
+  left: 0;
+  right: 0;
+}
+.autocomplete-items div {
+  padding: 10px;
+  cursor: pointer;
+  background-color: #fff;
+  border-bottom: 1px solid #d4d4d4;
+}
+.autocomplete-items div:hover {
+  /*when hovering an item:*/
+  background-color: #e9e9e9;
+}
+.autocomplete-active {
+  /*when navigating through the items using the arrow keys:*/
+  background-color: DodgerBlue !important;
+  color: #ffffff;
+}
+
+</style>
+<body class = "text-center">
+    <div class="tab">
+        <button class="tablinks" onclick="window.location.href='index.html'" id="defaultOpen">Flights</button>
+        <button class="tablinks" onclick="window.location.href='airports.html'">Heat Map</button>
+        <button class="tablinks" onclick="window.location.href='delay.html'">Flight Delay</button>
+    </div>
+        <div>
+            <form autocomplete="off" class = "form-signin" action="{{ url_for('getDelay') }}" method="POST">
+                <h1 class="h2 mb-3 font-weight-normal" style="margin-right:10px">Flight Delay Estimation</h1>
+                <fieldset>
+                    <div class="autocomplete">
+                        <input name="depAirport" type="text" class="form-control" id="depAirport" placeholder="Departure Airport" style = "margin-top:15px; margin-bottom:10px">
+                    </div>
+                    <div class="autocomplete">
+                        <input name="arrAirport" type="text" class="form-control" id="arrAirport" placeholder="Arrival Airport" style = "margin-top:15px; margin-bottom:10px">
+                    </div>
+                    <div>
+                        <label for="delayTime">Departure Time: <br/></label>
+                        <input type="time" id="delayTime" placeholder="delay time">
+                    </div>
+                    <label for="airlines" style = "margin-top:15px; margin-bottom:-20px">Airlines: <br/></label>
+                    <select name="airlines" class="btn btn-lg btn-secondary btn-block" style = "height:50px; margin-top:15px; margin-bottom:10px">
+                        <option value="19977">United Airlines</option>
+                        <option value="19805">American Airlines</option>
+                        <option value="20436">Frontier Airlines</option>
+                        <option value="20409">JetBlue Airways</option>
+                        <option value="20304">Skywest Airlines</option>
+                        <option value="19930">Alaska Airlines</option>
+                        <option value="20416">Spirit Airlines</option>
+                        <option value="19393">Southwest Airlines</option>
+                        <option value="19790">Delta Airlines</option>
+                        <option value="20366">Atlantic Southeast Airlines</option>
+                        <option value="19690">Hawaiian Airlines</option>
+                        <option value="20398">American Eagle Airlines</option>
+                        <option value="21171">Virgin America Airlines</option>
+                        <option value="20368">Allegiant Airlines</option>
+                        <option value="20378">Mesa Airlines</option>
+                        <option value="20363">Endeavor Airlines</option>
+                        <option value="20397">PSA Airlines</option>
+                        <option value="20452">Republic Airways</option>
+                    </select>
+                </fieldset>
+            </form>
+            <form class = "form-signin" action="{{ url_for('getDelay') }}" method="POST" style = "margin-top:-13px">
+                <input type="submit" class="btn btn-lg btn-secondary btn-block" value="Get Delay Time">
+            </form>
+        </div>
+    </body>
+</html>
+
+<script type="text/javascript">
+
+</script>

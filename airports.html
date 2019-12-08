@@ -38,7 +38,6 @@ body {
 .screw {
 	position:absolute;
 	left:300px;
-	top:30px;
 }
 .info{
 	position:absolute;
@@ -50,12 +49,56 @@ body {
 	left:900px;
 	top:102px;
 }
+.tab {
+	overflow: hidden;
+	border: 1px solid #ccc;
+	background-color: #f1f1f1;
+	}
+	.tab button {
+	background-color: inherit;
+	float: left;
+	border: none;
+	outline: none;
+	cursor: pointer;
+	padding: 14px 16px;
+	transition: 0.3s;
+	}
+
+	/* Change background color of buttons on hover */
+	.tab button:hover {
+	background-color: #ddd;
+	}
+
+	/* Create an active/current tablink class */
+	.tab button.active {
+	background-color: #ccc;
+	}
+
+	/* Style the tab content */
+	.tabcontent {
+	display: none;
+	padding: 6px 12px;
+	border: 1px solid #ccc;
+	border-top: none;
+	}
+	.tabcontent {
+	animation: fadeEffect 1s; /* Fading effect takes 1 second */
+	}
+
+            html, body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
 
 </style>
 </head>
 <body>
-	<br>
-	<br>
+	<div class="tab">
+			<button class="tablinks" onclick="window.location.href='index.html'" id="defaultOpen">Flights</button>
+			<button class="tablinks" onclick="window.location.href='airports.html'">Heat Map</button>
+			<button class="tablinks" onclick="window.location.href='delay.html'">Flight Delay</button>
+	</div>
 <h1 class="screw" id="title">Level of Congestion at Major US Airports</h1>
 <div class="dates">
 		<h2>Date </h2>
